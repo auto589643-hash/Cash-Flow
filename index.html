@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CA$HFLOW Meetup — Cool Cartoon Mobile Mockup v2</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<nav class="preview-nav" aria-label="Mockup screens">
+  <button class="active" data-screen="event">Event</button>
+  <button data-screen="register">Register</button>
+  <button data-screen="admin">Admin</button>
+  <button data-screen="checkin">Check-in</button>
+</nav>
+
+<div class="device">
+  <section id="event" class="screen active" aria-label="Event landing page">
+    <header class="topbar">
+      <div class="brand">CA<span>$</span>HFLOW</div>
+      <div class="tag">MEETUP</div>
+    </header>
+
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="hero-kicker">OFFLINE BOARD GAME</span>
+        <h1>CA$HFLOW<br>MEETUP</h1>
+        <p class="hero-sub">ลองตัดสินใจเรื่องเงินจริง ผ่านเกมที่ทำให้เห็นผลของทุกการเลือก</p>
+      </div>
+      <div class="speedline" aria-hidden="true"></div>
+      <div class="hero-art" aria-hidden="true">
+        <img alt="" src="assets/cashflow-hero.webp">
+      </div>
+    </div>
+
+    <section class="info-strip" aria-label="Event information">
+      <div class="info-grid">
+        <div class="info-cell">
+          <span class="info-label">วันที่</span>
+          <div class="info-value">19 กันยายน</div>
+        </div>
+        <div class="info-cell">
+          <span class="info-label">เวลา</span>
+          <div class="info-value">เริ่ม 16.00 น.</div>
+        </div>
+        <div class="info-cell full">
+          <span class="info-label">สถานที่</span>
+          <div class="info-value">Gateway at Bangsue · <a href="#" onclick="return false">ดูแผนที่ →</a></div>
+        </div>
+      </div>
+
+      <div class="status-note">
+        <div class="status-icon">!</div>
+        <div>
+          <strong>สมัครได้เลย แต่ยังไม่ถือว่าได้รับสิทธิ์</strong>
+          <p>ทีมงานจะตรวจใบสมัครและส่งอีเมลยืนยันให้ผู้ที่ได้รับการอนุมัติ</p>
+        </div>
+      </div>
+    </section>
+
+    <main class="event-copy">
+      <div class="one-liner">สำหรับนักเรียนและนักศึกษาที่อยากเข้าใจเรื่องเงินแบบสนุกขึ้น ผ่านการเล่นจริง ไม่ใช่การนั่งฟังยาว ๆ</div>
+    </main>
+
+    <div class="sticky-cta">
+      <button class="primary" onclick="showScreen('register')">สมัครเข้าร่วม</button>
+      <div class="cta-help">ใช้เวลาประมาณ 1–2 นาที</div>
+    </div>
+  </section>
+
+  <section id="register" class="screen" aria-label="Registration form">
+    <header class="form-head">
+      <button class="back-btn" type="button" onclick="showScreen('event')">← กลับ</button>
+      <h1>ลงทะเบียน</h1>
+      <p>Gateway at Bangsue · 19 กันยายน · เริ่ม 16.00 น.</p>
+      <div class="step-row">
+        <span id="stepLabel" class="step-label">Step 1/2</span>
+        <div class="progress" aria-label="Registration progress"><i class="on"></i><i id="progress2"></i></div>
+      </div>
+    </header>
+
+    <form id="regForm" class="form-body" novalidate>
+      <div id="step1" class="step active">
+        <div class="form-title">ข้อมูลผู้สมัคร</div>
+
+        <div class="field" data-required>
+          <label for="fullname">ชื่อ-นามสกุล <span class="req">*</span></label>
+          <input id="fullname" name="fullname" autocomplete="name" required placeholder="เช่น กิตติพงษ์ ใจดี">
+          <span class="error">กรุณากรอกชื่อ-นามสกุล</span>
+        </div>
+
+        <div class="field" data-required>
+          <label for="nickname">ชื่อเล่น <span class="req">*</span></label>
+          <input id="nickname" name="nickname" autocomplete="nickname" required placeholder="ชื่อที่อยากให้เรียก">
+          <span class="error">กรุณากรอกชื่อเล่น</span>
+        </div>
+
+        <div class="field" data-required>
+          <label for="age">ช่วงอายุ <span class="req">*</span></label>
+          <select id="age" name="age" required>
+            <option value="">เลือกช่วงอายุ</option>
+            <option>ต่ำกว่า 15</option>
+            <option>15–18</option>
+            <option>19–22</option>
+            <option>23 ปีขึ้นไป</option>
+          </select>
+          <span class="error">กรุณาเลือกช่วงอายุ</span>
+        </div>
+
+        <div class="field" data-required>
+          <label for="phone">เบอร์โทร <span class="req">*</span></label>
+          <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="08x-xxx-xxxx">
+          <span class="error">กรุณากรอกเบอร์โทร</span>
+        </div>
+
+        <div class="field" data-required>
+          <label for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="name@example.com" aria-describedby="emailHelp">
+          <small id="emailHelp">ใช้สำหรับรับผลยืนยันสิทธิ์และ QR สำหรับ Check-in</small>
+          <span class="error">กรุณากรอก Email ให้ถูกต้อง</span>
+        </div>
+      </div>
+
+      <div id="step2" class="step">
+        <div class="form-title">รู้จักคุณอีกนิด</div>
+        <div class="field">
+          <label>เวลาได้เงินมา คุณเป็นสายไหน?</label>
+          <div class="radio-grid">
+            <label class="radio-card"><input type="radio" name="moneyStyle" value="เก็บก่อน"> เก็บก่อน ค่อยตัดสินใจ</label>
+            <label class="radio-card"><input type="radio" name="moneyStyle" value="ใช้ตามเป้าหมาย"> ใช้ตามเป้าหมาย</label>
+            <label class="radio-card"><input type="radio" name="moneyStyle" value="มองหาโอกาส"> มองหาโอกาสลงทุน</label>
+            <label class="radio-card"><input type="radio" name="moneyStyle" value="แล้วแต่สถานการณ์"> แล้วแต่สถานการณ์</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="moneyGoal">เรื่องเงินที่อยากเข้าใจมากขึ้น</label>
+          <textarea id="moneyGoal" name="moneyGoal" placeholder="ตอบสั้น ๆ ได้เลย"></textarea>
+        </div>
+      </div>
+
+      <div id="pendingState" class="step pending-state" aria-live="polite">
+        <div class="pending-mark">⏳</div>
+        <h2>ได้รับใบสมัครแล้ว</h2>
+        <p>ตอนนี้สถานะคือ <strong>รอตรวจสอบ</strong><br>หากได้รับสิทธิ์ ระบบจะส่ง Email ยืนยันพร้อม QR Check-in ให้คุณ</p>
+        <div class="pending-badge">Pending Review</div>
+      </div>
+    </form>
+
+    <div class="sticky-cta">
+      <button id="regAction" class="primary" type="button" onclick="nextRegistration()">ถัดไป</button>
+      <div id="regHelp" class="cta-help">Step 1 จาก 2</div>
+    </div>
+  </section>
+
+  <section id="admin" class="screen" aria-label="Admin applicant management">
+    <header class="admin-head">
+      <div class="brand">CA<span>$</span>HFLOW ADMIN</div>
+      <div class="sub">Gateway at Bangsue · 19 กันยายน</div>
+      <div class="admin-tabs">
+        <button class="active" type="button">ผู้สมัคร</button>
+        <button type="button" onclick="showScreen('checkin')">Check-in</button>
+      </div>
+    </header>
+
+    <main class="admin-body">
+      <div class="stats">
+        <div class="stat"><b>46</b><span>สมัครทั้งหมด</span></div>
+        <div class="stat"><b>18</b><span>รอตรวจ</span></div>
+        <div class="stat"><b>24</b><span>อนุมัติ</span></div>
+      </div>
+
+      <button class="checkin-cta" type="button" onclick="showScreen('checkin')">เปิดโหมด Check-in</button>
+
+      <div class="toolbar">
+        <input class="search" placeholder="ค้นชื่อ / เบอร์ / Email" aria-label="ค้นหาผู้สมัคร">
+        <button class="icon-action" aria-label="Filter">⌕</button>
+      </div>
+
+      <div class="filters" aria-label="Applicant filters">
+        <button class="filter-chip active">Pending 18</button>
+        <button class="filter-chip">Approved 24</button>
+        <button class="filter-chip">Waitlist 4</button>
+      </div>
+
+      <article class="applicant">
+        <div class="applicant-top">
+          <div>
+            <h3>พิมพ์ชนก ว.</h3>
+            <p>มิ้นท์ · 19–22 · mint@example.com</p>
+          </div>
+          <span class="badge pending">Pending</span>
+        </div>
+        <div class="answer">อยากเข้าใจ: การลงทุนและการตัดสินใจเรื่องเงิน</div>
+        <div class="admin-actions-row">
+          <button class="approve">Approve</button>
+          <button class="secondary">Waitlist</button>
+          <button class="secondary more" aria-label="More actions">•••</button>
+        </div>
+      </article>
+
+      <article class="applicant">
+        <div class="applicant-top">
+          <div>
+            <h3>ศุภกิตติ์ จ.</h3>
+            <p>เจ · 19–22 · jay@example.com</p>
+          </div>
+          <span class="badge pending">Pending</span>
+        </div>
+        <div class="answer">สไตล์: มองหาโอกาสลงทุน</div>
+        <div class="admin-actions-row">
+          <button class="approve">Approve</button>
+          <button class="secondary">Waitlist</button>
+          <button class="secondary more" aria-label="More actions">•••</button>
+        </div>
+      </article>
+
+      <article class="applicant">
+        <div class="applicant-top">
+          <div>
+            <h3>สุภัสสรา ก.</h3>
+            <p>ฟ้า · 15–18 · fah@example.com</p>
+          </div>
+          <span class="badge wait">Waitlist</span>
+        </div>
+        <div class="answer">อยากเข้าใจ: การวางแผนเงิน</div>
+        <div class="admin-actions-row">
+          <button class="approve">Promote</button>
+          <button class="secondary more" aria-label="More actions">•••</button>
+        </div>
+      </article>
+    </main>
+  </section>
+
+  <section id="checkin" class="screen" aria-label="Check-in mode">
+    <header class="admin-head">
+      <button class="back-btn" type="button" onclick="showScreen('admin')">← กลับ Admin</button>
+      <div class="brand" style="margin-top:7px">CHECK-IN</div>
+      <div class="sub">Gateway at Bangsue · 19 กันยายน</div>
+    </header>
+
+    <main class="checkin-wrap">
+      <section class="scan-card">
+        <div class="scan-box"><span>▣</span></div>
+        <h2>สแกน QR ของผู้เข้าร่วม</h2>
+        <p>ใช้กล้องเพื่อยืนยันสิทธิ์และ Check-in</p>
+      </section>
+
+      <section class="manual">
+        <strong>สแกนไม่ได้?</strong>
+        <div class="manual-row">
+          <input placeholder="ชื่อ / เบอร์ / รหัส" aria-label="ค้นหาผู้เข้าร่วม">
+          <button type="button">ค้นหา</button>
+        </div>
+      </section>
+
+      <div class="demo-note">Mockup นี้แยก Check-in ออกจากหน้าจัดการผู้สมัคร เพื่อให้หน้างานเปิดแล้วเจอ action หลักทันที</div>
+    </main>
+  </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
