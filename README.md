@@ -9,7 +9,7 @@ Mobile-first interactive mockup for the CA$HFLOW Meetup registration experience.
 - Pending-review confirmation state
 - Admin applicant workflow
 - Check-in mode
-- Self-contained cartoon hero artwork embedded in `index.html`
+- Cartoon hero artwork in `assets/cashflow-hero.svg`
 
 ## Run locally
 
