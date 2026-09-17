@@ -9,8 +9,6 @@
 7. Deploy → New deployment → Web app.
    - Execute as: Me
    - Who has access: Anyone
-8. Copy the `/exec` deployment URL.
-9. In Vercel project `cash-flow`, add Production environment variable `APPS_SCRIPT_URL` with that URL.
-10. Redeploy production.
+8. Copy the final `/exec` deployment URL and send it back to Emily. Emily can wire it into the web backend and redeploy. Alternatively, set it yourself as the Vercel Production environment variable `APPS_SCRIPT_URL` and redeploy.
 
 The participant endpoint is public by design. Admin actions require a server-issued session token after password verification in Apps Script.
