@@ -4,9 +4,9 @@ export default async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   const upstream=process.env.APPS_SCRIPT_URL||DEFAULT_APPS_SCRIPT_URL;
   if(!['GET','POST'].includes(req.method)){res.setHeader('Allow','GET, POST');return res.status(405).json({ok:false,error:'method_not_allowed'});}
-  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),22000);
   try{
-    let url=upstream;let options={redirect:'follow',signal:controller.signal,headers:{'user-agent':'cashflow-vercel-proxy/1.0'}};
+    let url=upstream;let options={redirect:'follow',signal:controller.signal,headers:{'user-agent':'cashflow-vercel-proxy/1.1'}};
     if(req.method==='GET'){
       const u=new URL(upstream);Object.entries(req.query||{}).forEach(([k,v])=>u.searchParams.set(k,Array.isArray(v)?v[0]:String(v)));url=u.toString();
     }else{
