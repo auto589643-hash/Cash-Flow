@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17121d"><title>CA$HFLOW Meetup — Participant</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="site"><div class="shell">
+  <header class="topbar"><div class="brand">CA<span>$</span>HFLOW</div><div class="tag">MEETUP</div></header>
+  <section id="eventView">
+    <div class="hero"><div class="hero-copy"><span class="hero-kicker">OFFLINE BOARD GAME</span><h1>CA$HFLOW<br>MEETUP</h1><p class="hero-sub">ลองตัดสินใจเรื่องเงินจริง ผ่านเกมที่ทำให้เห็นผลของทุกการเลือก</p></div><div class="hero-art"><img src="/assets/cashflow-hero.svg" alt="ภาพประกอบกิจกรรม Cashflow"></div></div>
+    <section class="info-strip"><div class="info-grid"><div class="info-cell"><span class="info-label">วันที่</span><div id="eventDate" class="info-value">—</div></div><div class="info-cell"><span class="info-label">เวลา</span><div id="eventTime" class="info-value">—</div></div><div class="info-cell full"><span class="info-label">สถานที่</span><div id="eventLocation" class="info-value">—</div></div></div><div class="status-note"><div class="status-icon">!</div><div><strong id="eventStatusTitle">สมัครแล้วรอทีมงานยืนยันสิทธิ์</strong><p id="eventStatusText">ทีมงานจะตรวจใบสมัครและส่งอีเมลเมื่อได้รับการอนุมัติ</p></div></div></section>
+    <main class="content"><div class="card one-liner">สำหรับนักเรียนและนักศึกษาที่อยากเข้าใจเรื่องเงินแบบสนุกขึ้น ผ่านการเล่นจริง ไม่ใช่การนั่งฟังยาว ๆ</div><div id="eventError" class="notice error hidden"></div></main>
+    <div class="sticky-cta"><button id="startBtn" class="primary" type="button">สมัครเข้าร่วม</button><div class="cta-help">กรอกบนมือถือได้ ใช้เวลาประมาณ 1–2 นาที</div></div>
+  </section>
+  <section id="registerView" class="hidden">
+    <header class="form-head"><button id="backToEvent" class="back-link" type="button">← กลับ</button><h1>ลงทะเบียน</h1><p id="registerMeta">กำลังโหลดข้อมูลรอบ…</p><div class="step-row"><span id="stepLabel" class="step-label">Step 1/2</span><div class="progress"><i class="on"></i><i id="progress2"></i></div></div></header>
+    <form id="regForm" class="form-body" novalidate>
+      <div id="step1" class="step active"><div class="form-title">ข้อมูลผู้สมัคร</div>
+        <div class="field" data-required><label for="fullname">ชื่อ-นามสกุล <span class="req">*</span></label><input id="fullname" name="fullname" autocomplete="name" maxlength="100" required><span class="error">กรุณากรอกชื่อ-นามสกุล</span></div>
+        <div class="field" data-required><label for="nickname">ชื่อเล่น <span class="req">*</span></label><input id="nickname" name="nickname" autocomplete="nickname" maxlength="40" required><span class="error">กรุณากรอกชื่อเล่น</span></div>
+        <div class="field" data-required><label for="age">ช่วงอายุ <span class="req">*</span></label><select id="age" name="age" required><option value="">เลือกช่วงอายุ</option><option>ต่ำกว่า 15</option><option>15–18</option><option>19–22</option><option>23 ปีขึ้นไป</option></select><span class="error">กรุณาเลือกช่วงอายุ</span></div>
+        <div class="field" data-required><label for="phone">เบอร์โทร <span class="req">*</span></label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="30" required><span class="error">กรุณากรอกเบอร์โทร</span></div>
+        <div class="field" data-required><label for="email">Email <span class="req">*</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="150" required aria-describedby="emailHelp"><small id="emailHelp">ใช้รับผลยืนยันสิทธิ์และ QR สำหรับ Check-in</small><span class="error">กรุณากรอก Email ให้ถูกต้อง</span></div>
+      </div>
+      <div id="step2" class="step"><div class="form-title">รู้จักคุณอีกนิด</div><div class="field"><label>เวลาได้เงินมา คุณเป็นสายไหน?</label><div class="radio-grid"><label class="radio-card"><input type="radio" name="moneyStyle" value="เก็บก่อน"> เก็บก่อน ค่อยตัดสินใจ</label><label class="radio-card"><input type="radio" name="moneyStyle" value="ใช้ตามเป้าหมาย"> ใช้ตามเป้าหมาย</label><label class="radio-card"><input type="radio" name="moneyStyle" value="มองหาโอกาส"> มองหาโอกาสลงทุน</label><label class="radio-card"><input type="radio" name="moneyStyle" value="แล้วแต่สถานการณ์"> แล้วแต่สถานการณ์</label></div></div><div class="field"><label for="moneyGoal">เรื่องเงินที่อยากเข้าใจมากขึ้น</label><textarea id="moneyGoal" name="moneyGoal" maxlength="500" placeholder="ตอบสั้น ๆ ได้เลย"></textarea></div></div>
+      <div id="submitError" class="notice error hidden"></div>
+      <div id="pendingState" class="step pending-state" aria-live="polite"><div class="pending-mark">⏳</div><h2>ได้รับใบสมัครแล้ว</h2><p>สถานะตอนนี้คือ <strong>รอตรวจสอบ</strong><br>หากได้รับสิทธิ์ ระบบจะส่ง Email ยืนยันพร้อม QR Check-in ให้คุณ</p><div id="referenceCode" class="pending-badge"></div><div id="duplicateNotice" class="notice hidden"></div></div>
+    </form>
+    <div class="sticky-cta"><button id="regAction" class="primary" type="button">ถัดไป</button><div id="regHelp" class="cta-help">Step 1 จาก 2</div></div>
+  </section>
+</div></div>
+<script src="/participant/participant.js" defer></script>
+</body></html>
