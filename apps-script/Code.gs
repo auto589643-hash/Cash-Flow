@@ -49,6 +49,7 @@ function doPost(e){
     if(a==='register')out=register_(body);
     else if(a==='registrationStatus')out=registrationStatus_(body);
     else if(a==='cancelRegistration')out=cancelRegistration_(body);
+    else if(a==='sendManageLink')out=sendManageLink_(body);
     else if(a==='adminLogin')out=adminLogin_(body.password);
     else if(a==='adminLogout')out=adminLogout_(body.token);
     else if(a==='adminBootstrap'){requireAdmin_(body.token);out=adminBootstrap_(body.roundCode)}
@@ -295,6 +296,49 @@ function cancelRegistration_(body){
       enqueueEmail_('status_update',updated,findRound_(reg.round_code));
     }
     return registrationStatusResponse_(updated);
+  }finally{
+    lock.releaseLock();
+  }
+}
+
+function sendManageLink_(body){
+  const phone=normalizeThaiPhone_(body.phone);
+  const email=clean_(body.email,254).toLowerCase();
+  if(!/^0[689]\d{8}$/.test(phone))throw new Error('invalid_phone');
+  if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('invalid_email');
+
+  const round=findRound_(body.roundCode);
+  if(!round)throw new Error('round_not_found');
+
+  const throttleKey='manage-link:'+sha256Hex_(round.round_code+'|'+phone+'|'+email).slice(0,32);
+  const cache=CacheService.getScriptCache();
+  if(cache.get(throttleKey))return {queued:true};
+
+  const lock=LockService.getScriptLock();
+  lock.waitLock(10000);
+  try{
+    const all=listRowsWithRow_(SHEETS.REG);
+    let reg=all
+      .filter(r=>
+        r.round_code===round.round_code&&
+        ACTIVE_REG_STATUSES.includes(r.status)&&
+        normalizeThaiPhone_(r.phone)===phone&&
+        String(r.email||'').toLowerCase()===email
+      )
+      .sort((a,b)=>String(b.submitted_at).localeCompare(String(a.submitted_at)))[0];
+
+    if(!reg){
+      cache.put(throttleKey,'1',60);
+      return {queued:true};
+    }
+
+    reg=ensureManageToken_(reg);
+    if(!hasOpenEmailQueue_('manage_link',reg.registration_id)){
+      enqueueEmail_('manage_link',reg,round);
+    }
+    cache.put(throttleKey,'1',60);
+    audit_('participant','request_manage_link',reg.round_code,reg.registration_id,'');
+    return {queued:true};
   }finally{
     lock.releaseLock();
   }
@@ -612,6 +656,7 @@ function processEmailQueue(){
         if(q.type==='submission')sendSubmissionEmail_(reg,round);
         else if(q.type==='approval')sendApprovalEmail_(reg,round);
         else if(q.type==='status_update')sendStatusUpdateEmail_(reg,round);
+        else if(q.type==='manage_link')sendManageLinkEmail_(reg,round);
         else throw new Error('unknown email type');
 
         const sentAt=now_();
@@ -736,6 +781,25 @@ function sendStatusUpdateEmail_(reg,round){
   });
 }
 
+function sendManageLinkEmail_(reg,round){
+  const html=mailShell_({
+    badge:'MANAGE',
+    badgeBg:'#f3e8f6',
+    badgeColor:BRAND.ink,
+    eyebrow:'CA$HFLOW MEETUP',
+    title:'ลิงก์ดูสถานะและจัดการใบสมัคร',
+    intro:'สวัสดี '+escapeHtml_(reg.nickname||reg.full_name)+' ใช้ปุ่มด้านล่างเพื่อดูสถานะล่าสุดหรือยกเลิกใบสมัครก่อน Check-in',
+    body:referenceCardHtml_(reg.reference_code,'Reference Code')+eventCardHtml_(round)+manageButtonHtml_(reg,round),
+    footer:'หากไม่ได้เป็นผู้ขอลิงก์นี้ ไม่ต้องดำเนินการใด ๆ'
+  });
+  MailApp.sendEmail({
+    to:reg.email,
+    subject:'ลิงก์จัดการใบสมัคร · '+(round.title||'CA$HFLOW Meetup'),
+    htmlBody:html,
+    name:getSetting_('email_sender_name')||'CA$HFLOW Meetup'
+  });
+}
+
 function mailShell_(x){
   return `<!doctype html><html><body style="margin:0;background:#f3eef5;font-family:Arial,'Noto Sans Thai',sans-serif;color:${BRAND.ink}"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3eef5"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:620px;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid ${BRAND.line}"><tr><td style="background:${BRAND.ink};padding:28px 28px 26px"><div style="color:${BRAND.yellow};font-size:13px;font-weight:800;letter-spacing:1.6px">${escapeHtml_(x.eyebrow)}</div><div style="margin-top:9px;color:#ffffff;font-size:34px;line-height:1.15;font-weight:900">CA<span style="color:${BRAND.yellow}">$</span>HFLOW</div><div style="margin-top:18px"><span style="display:inline-block;background:${x.badgeBg};color:${x.badgeColor};border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900">${escapeHtml_(x.badge)}</span></div><h1 style="margin:16px 0 0;color:#ffffff;font-size:28px;line-height:1.3">${escapeHtml_(x.title)}</h1></td></tr><tr><td style="padding:28px"><div style="font-size:15px;line-height:1.8;color:#3d3442">${x.intro}</div><div style="margin-top:22px">${x.body}</div></td></tr><tr><td style="background:${BRAND.paper};padding:18px 28px;border-top:1px solid ${BRAND.line};color:${BRAND.muted};font-size:12px;line-height:1.6">${escapeHtml_(x.footer)}<br>CA$HFLOW Meetup</td></tr></table></td></tr></table></body></html>`;
 }
@@ -855,7 +919,7 @@ function decorateAdminRegistrations_(regs,mail){
     );
 
     const latest=[...mail]
-      .filter(q=>q.registration_id===r.registration_id)
+      .filter(q=>q.registration_id===r.registration_id&&q.type!=='manage_link')
       .sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)))[0];
     const fallbackSentAt=r.approval_email_sent_at||r.submission_email_sent_at||'';
     const emailStatus=latest?.status||(fallbackSentAt?'Sent':'NotQueued');
