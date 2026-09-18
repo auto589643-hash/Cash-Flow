@@ -303,14 +303,14 @@ function statusActionButtons(r){
   }
 
   if(['Rejected','Cancelled'].includes(r.status)){
-    return `<button class="secondary" data-action="Pending" data-id="${esc(r.registration_id)}">คืนเป็น Pending</button>`;
+    return `<button type="button" class="secondary" data-action="Pending" data-id="${esc(r.registration_id)}">คืนเป็น Pending</button>`;
   }
 
   return [
-    r.status!=='Approved'?`<button class="approve" data-action="Approved" data-id="${esc(r.registration_id)}">Approve</button>`:'',
-    r.status!=='Waitlist'?`<button class="secondary" data-action="Waitlist" data-id="${esc(r.registration_id)}">Waitlist</button>`:'',
-    r.status!=='Rejected'?`<button class="secondary danger" data-action="Rejected" data-id="${esc(r.registration_id)}">Reject</button>`:'',
-    r.status==='Approved'?`<button class="secondary" data-checkin="${esc(r.registration_id)}">Check-in</button>`:''
+    r.status!=='Approved'?`<button type="button" class="approve" data-action="Approved" data-id="${esc(r.registration_id)}">Approve</button>`:'',
+    r.status!=='Waitlist'?`<button type="button" class="secondary" data-action="Waitlist" data-id="${esc(r.registration_id)}">Waitlist</button>`:'',
+    r.status!=='Rejected'?`<button type="button" class="secondary danger" data-action="Rejected" data-id="${esc(r.registration_id)}">Reject</button>`:'',
+    r.status==='Approved'?`<button type="button" class="secondary" data-checkin="${esc(r.registration_id)}">Check-in</button>`:''
   ].join('');
 }
 
@@ -439,9 +439,9 @@ function renderRounds(){
         </div>
       </div>
       <div class="round-actions">
-        <button class="secondary" data-manage-round="${esc(r.round_code)}">จัดการรอบนี้</button>
-        <button class="secondary" data-edit-round="${esc(r.round_id)}">แก้ไข</button>
-        ${r.is_public_active?'':`<button class="secondary" data-public-round="${esc(r.round_code)}">ตั้งเป็น Public</button>`}
+        <button type="button" class="secondary" data-manage-round="${esc(r.round_code)}">จัดการรอบนี้</button>
+        <button type="button" class="secondary" data-edit-round="${esc(r.round_id)}">แก้ไข</button>
+        ${r.is_public_active?'':`<button type="button" class="secondary" data-public-round="${esc(r.round_code)}">ตั้งเป็น Public</button>`}
       </div>
     </article>`;
   }).join(''):'<div class="notice">ยังไม่มีรอบ</div>';
@@ -606,7 +606,7 @@ async function searchCheckin(){
       <div class="admin-actions">
         ${r.checked_in_at
           ?`<span class="cta-help align-left">Check-in แล้ว ${esc(r.checked_in_at)}</span>`
-          :`<button class="approve" data-check-result="${esc(r.registration_id)}">ยืนยัน Check-in</button>`}
+          :`<button type="button" class="approve" data-check-result="${esc(r.registration_id)}">ยืนยัน Check-in</button>`}
       </div>
     </article>`).join(''):'<div class="notice">ไม่พบผู้ได้รับอนุมัติที่ตรงกับคำค้น</div>';
 
