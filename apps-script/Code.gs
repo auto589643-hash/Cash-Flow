@@ -828,10 +828,15 @@ function decorateAdminRegistrations_(regs,mail){
       ).map(x=>x.registration_id)
     );
 
-    const type=r.status==='Approved'||r.approval_email_sent_at?'approval':'submission';
+    let type='submission';
+    if(r.status==='Approved')type='approval';
+    else if(r.approval_email_sent_at)type='status_update';
+
     const latest=[...mail].filter(q=>q.registration_id===r.registration_id&&q.type===type)
       .sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)))[0];
-    const sentAt=type==='approval'?r.approval_email_sent_at:r.submission_email_sent_at;
+    const sentAt=type==='approval'
+      ?r.approval_email_sent_at
+      :(type==='submission'?r.submission_email_sent_at:(latest?.sent_at||''));
     const emailStatus=sentAt?'Sent':(latest?.status||'NotQueued');
 
     return {
