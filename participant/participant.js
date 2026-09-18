@@ -11,11 +11,14 @@ const DEFAULT_ROUND={
 const params=new URLSearchParams(location.search);
 const explicitRoundCode=params.get('round')||'';
 const initialManageToken=params.get('manage')||'';
+const DRAFT_KEY='cashflow_registration_draft_v2';
 const state={
   roundCode:explicitRoundCode,
   round:null,
   roundVerified:false,
   step:1,
+  view:'event',
+  hasDraft:false,
   clientRequestId:makeClientId(),
   existingLookup:null,
   contactCheckSeq:0,
@@ -65,6 +68,7 @@ async function api(action,payload=null,timeoutMs=18000){
     return data;
   }catch(err){
     if(err.name==='AbortError')throw Object.assign(new Error('ระบบตอบช้ากว่าปกติ'),{code:'timeout'});
+    if(!navigator.onLine)throw Object.assign(new Error('อินเทอร์เน็ตหลุดชั่วคราว ข้อมูลที่กรอกยังอยู่ในแท็บนี้'),{code:'offline'});
     throw err;
   }finally{
     clearTimeout(timer);
@@ -90,9 +94,18 @@ function setText(id,value){
   if(el)el.textContent=value||'—';
 }
 
-function setView(name){
+function viewName(name){
+  return name==='#registerView'?'register':name==='#statusView'?'status':'event';
+}
+
+function setView(name,{push=true}={}){
   ['#eventView','#registerView','#statusView'].forEach(id=>$(id)?.classList.add('hidden'));
   $(name)?.classList.remove('hidden');
+  state.view=viewName(name);
+  document.body.classList.toggle('flow-mode',state.view!=='event');
+  if(push&&history.state?.cashflowView!==state.view){
+    history.pushState({cashflowView:state.view},'',location.href);
+  }
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   scrollTo({top:0,behavior:reduced?'auto':'smooth'});
 }
@@ -128,6 +141,12 @@ function renderRound(round,{verified=false}={}){
 
   $('#statusMeta').textContent=`${round.title||'CA$HFLOW Meetup'} · ใช้ข้อมูลเดียวกับที่สมัคร`;
 
+  const topTag=$('#eventTopTag');
+  const seatBadge=$('#eventSeatBadge');
+  const seatLabel=cleanSeatLabel(round.public_seat_display,round);
+  if(seatBadge)seatBadge.textContent=seatLabel;
+  if(topTag)topTag.textContent=round.status==='Open'?'OPEN':round.status==='Full'?'WAITLIST':'CLOSED';
+
   const start=$('#startBtn');
   if(!state.roundVerified){
     start.disabled=true;
@@ -137,7 +156,7 @@ function renderRound(round,{verified=false}={}){
 
   if(round.status==='Open'){
     start.disabled=false;
-    start.textContent='สมัครเข้าร่วม';
+    start.textContent=state.hasDraft?'กรอกใบสมัครต่อ':'สมัครเข้าร่วม';
     $('#eventStatusTitle').textContent='หลังสมัคร ทีมงานจะตรวจสอบสิทธิ์';
     const seatText=Number.isFinite(Number(round.remaining_seats))&&round.remaining_seats!==null
       ?` · เหลือสำหรับอนุมัติ ${round.remaining_seats} ที่`:'';
@@ -153,6 +172,13 @@ function renderRound(round,{verified=false}={}){
     $('#eventStatusTitle').textContent='ปิดรับใบสมัครแล้ว';
     $('#eventStatusText').textContent=`สถานะรอบนี้: ${round.status}`;
   }
+}
+
+function cleanSeatLabel(publicText,round){
+  const raw=String(publicText||'').trim();
+  if(raw)return raw.replace(/เท่านั้น$/,'').trim();
+  if(round?.capacity_enabled&&Number(round.approval_capacity)>0)return `ฟรี · ${Number(round.approval_capacity)} ที่นั่ง`;
+  return 'เข้าร่วมฟรี';
 }
 
 function readRoundCache(){
@@ -339,18 +365,19 @@ function setStep(step){
   if(step===1){
     $('#stepLabel').textContent='Step 1/2';
     $('#regAction').textContent='ถัดไป';
-    $('#regHelp').textContent='Step 1 จาก 2';
+    $('#regHelp').textContent='ข้อมูลหลักสำหรับสมัครและรับผลยืนยันสิทธิ์';
   }else if(step===2){
     $('#stepLabel').textContent='Step 2/2';
-    $('#regAction').textContent='ส่งใบสมัคร';
-    $('#regHelp').textContent='ตรวจข้อมูลแล้วจึงส่งใบสมัคร';
+    $('#regAction').textContent='ยืนยันและส่งใบสมัคร';
+    $('#regHelp').textContent='ตรวจชื่อและช่องทางติดต่อก่อนส่ง';
     renderReview();
   }else{
     $('#stepLabel').textContent='ส่งแล้ว';
-    $('#regAction').textContent='กลับหน้ากิจกรรม';
+    $('#regAction').textContent='ดูสถานะใบสมัคร';
     $('#regBack').classList.add('hidden');
     $('#regHelp').textContent='ระบบรับข้อมูลแล้ว';
   }
+  if(step<3)saveDraftSoon();
 }
 
 function setLoading(on){
@@ -363,6 +390,7 @@ function setLoading(on){
 function resetRegistrationFlow({preserveContact=false}={}){
   const phone=preserveContact?$('#phone').value:'';
   const email=preserveContact?$('#email').value:'';
+  clearDraft();
   $('#regForm').reset();
   $('#phone').value=phone;
   $('#email').value=email;
@@ -387,8 +415,13 @@ function showRegister(){
   setStep(state.step===2?2:1);
 }
 
-function showEvent(){
-  setView('#eventView');
+function showEvent({push=true}={}){
+  setView('#eventView',{push});
+}
+
+function backToEvent(){
+  if(history.state?.cashflowView&&history.state.cashflowView!=='event')history.back();
+  else showEvent();
 }
 
 function showStatus(data=null){
@@ -498,6 +531,7 @@ async function loadManagedStatus(){
 }
 
 function showSubmitted(data){
+  clearDraft();
   const reg=data.registration;
   state.lastRegistrationData={
     found:true,
@@ -540,7 +574,7 @@ async function next(){
   }
 
   if(state.step===3){
-    showEvent();
+    showStatus(state.lastRegistrationData);
     return;
   }
 
@@ -584,6 +618,8 @@ async function next(){
       ?'ระบบตอบช้า แต่ใบสมัครอาจถูกบันทึกแล้ว กด “ส่งใบสมัคร” อีกครั้งได้อย่างปลอดภัย ระบบจะไม่สร้างรายการซ้ำจากการส่งครั้งเดิม'
       :`สมัครไม่สำเร็จ: ${err.message}`;
     $('#submitError').classList.remove('hidden');
+    $('#submitError').setAttribute('tabindex','-1');
+    $('#submitError').focus();
     setLoading(false);
   }
 }
@@ -638,13 +674,93 @@ async function cancelManagedRegistration(){
   }
 }
 
+let draftTimer=null;
+function draftPayload(){
+  const fd=new FormData($('#regForm'));
+  return {
+    savedAt:Date.now(),
+    step:Math.min(state.step,2),
+    fields:{
+      phone:$('#phone').value,
+      email:$('#email').value,
+      fullname:$('#fullname').value,
+      nickname:$('#nickname').value,
+      age:$('#age').value,
+      moneyStyle:fd.get('moneyStyle')||'',
+      moneyGoal:$('#moneyGoal').value
+    }
+  };
+}
+function saveDraft(){
+  if(state.step>=3)return;
+  try{
+    const d=draftPayload();
+    const hasValue=Object.values(d.fields).some(v=>String(v||'').trim());
+    if(!hasValue){sessionStorage.removeItem(DRAFT_KEY);state.hasDraft=false;return}
+    sessionStorage.setItem(DRAFT_KEY,JSON.stringify(d));
+    state.hasDraft=true;
+  }catch{}
+}
+function saveDraftSoon(){
+  clearTimeout(draftTimer);
+  draftTimer=setTimeout(saveDraft,180);
+}
+function clearDraft(){
+  clearTimeout(draftTimer);
+  try{sessionStorage.removeItem(DRAFT_KEY)}catch{}
+  state.hasDraft=false;
+}
+function restoreDraft(){
+  try{
+    const raw=sessionStorage.getItem(DRAFT_KEY);
+    if(!raw)return false;
+    const d=JSON.parse(raw);
+    if(!d?.fields||Date.now()-Number(d.savedAt||0)>12*60*60*1000){clearDraft();return false}
+    const f=d.fields;
+    $('#phone').value=formatPhone(f.phone||'');
+    $('#email').value=f.email||'';
+    $('#fullname').value=f.fullname||'';
+    $('#nickname').value=f.nickname||'';
+    $('#age').value=f.age||'';
+    $('#moneyGoal').value=f.moneyGoal||'';
+    if(f.moneyStyle){
+      const radio=[...document.querySelectorAll('input[name="moneyStyle"]')].find(x=>x.value===f.moneyStyle);
+      if(radio)radio.checked=true;
+    }
+    if(f.moneyStyle||f.moneyGoal)$('#optionalDetails').open=true;
+    state.step=Number(d.step)===2?2:1;
+    state.hasDraft=true;
+    return true;
+  }catch{clearDraft();return false}
+}
+
+history.replaceState({cashflowView:'event'},'',location.href);
+window.addEventListener('popstate',e=>{
+  const view=e.state?.cashflowView||'event';
+  if(view==='register')setView('#registerView',{push:false});
+  else if(view==='status')setView('#statusView',{push:false});
+  else showEvent({push:false});
+});
+
+window.addEventListener('offline',()=>{
+  const box=state.view==='event'?$('#eventError'):$('#submitError');
+  if(box){
+    box.textContent='อินเทอร์เน็ตหลุดชั่วคราว ข้อมูลที่กรอกยังเก็บไว้ในแท็บนี้ กรุณาเชื่อมต่อแล้วลองอีกครั้ง';
+    box.classList.remove('hidden');
+  }
+});
+window.addEventListener('online',()=>{
+  if(state.view==='event')loadRound();
+});
+
 attachPhoneFormatter($('#phone'));
 attachPhoneFormatter($('#statusPhone'));
 
-document.querySelectorAll('#step1 input,#step1 select').forEach(el=>{
+document.querySelectorAll('#regForm input,#regForm select,#regForm textarea').forEach(el=>{
   ['input','change'].forEach(ev=>el.addEventListener(ev,()=>{
     el.closest('.field')?.classList.remove('invalid');
     el.removeAttribute('aria-invalid');
+    saveDraftSoon();
   }));
 });
 
@@ -660,9 +776,12 @@ $('#moneyGoal').addEventListener('input',()=>{
 
 $('#startBtn').addEventListener('click',showRegister);
 $('#statusBtn').addEventListener('click',()=>showStatus());
-$('#backToEvent').addEventListener('click',showEvent);
-$('#statusBackBtn').addEventListener('click',showEvent);
-$('#regAction').addEventListener('click',next);
+$('#backToEvent').addEventListener('click',backToEvent);
+$('#statusBackBtn').addEventListener('click',backToEvent);
+$('#regForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  next();
+});
 $('#regBack').addEventListener('click',()=>setStep(1));
 $('#editDetailsBtn').addEventListener('click',()=>setStep(1));
 
@@ -682,6 +801,10 @@ $('#statusReapplyBtn').addEventListener('click',()=>{
   showRegister();
 });
 
+restoreDraft();
 renderRound(DEFAULT_ROUND,{verified:false});
-setStep(1);
-loadRound().then(()=>loadManagedStatus());
+setStep(state.step);
+loadRound().then(()=>{
+  if(state.hasDraft&&state.round?.status==='Open')$('#startBtn').textContent='กรอกใบสมัครต่อ';
+  return loadManagedStatus();
+});

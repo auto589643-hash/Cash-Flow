@@ -12,7 +12,7 @@
 <div class="site"><div class="shell">
   <header class="topbar">
     <div class="brand">CA<span>$</span>HFLOW</div>
-    <div class="tag">MEETUP</div>
+    <div id="eventTopTag" class="tag event-tag">OPEN</div>
   </header>
 
   <section id="eventView">
@@ -21,9 +21,13 @@
         <span class="hero-kicker">OFFLINE BOARD GAME</span>
         <h1>CA$HFLOW<br>MEETUP</h1>
         <p class="hero-sub">ลองตัดสินใจเรื่องเงินจริง ผ่านเกมที่ทำให้เห็นผลของทุกการเลือก</p>
+        <div class="hero-meta" aria-live="polite">
+          <span id="eventSeatBadge" class="hero-seat-badge">ฟรี · 30 ที่นั่ง</span>
+          <span class="hero-meta-note">สำหรับนักเรียนและนักศึกษา</span>
+        </div>
       </div>
       <div class="hero-art">
-        <img src="../assets/cashflow-hero.svg" width="1200" height="800" fetchpriority="high" alt="ภาพประกอบกิจกรรม Cashflow">
+        <img src="../assets/cashflow-hero.svg" width="1200" height="800" fetchpriority="high" alt="" aria-hidden="true">
       </div>
     </div>
 
@@ -35,16 +39,19 @@
         <div class="info-cell full"><span class="info-label">สถานที่</span><div id="eventLocation" class="info-value">Gateway at Bangsue</div></div>
       </div>
       <div class="status-note" role="status">
-        <div class="status-icon" aria-hidden="true">!</div>
-        <div>
+        <div class="status-icon" aria-hidden="true">✓</div>
+        <div class="status-copy">
           <strong id="eventStatusTitle">หลังสมัคร ทีมงานจะตรวจสอบสิทธิ์</strong>
           <p id="eventStatusText">เมื่อได้รับการอนุมัติ ระบบจะส่ง Email พร้อม QR สำหรับ Check-in</p>
+          <div class="process-steps" aria-hidden="true">
+            <span>สมัคร</span><i>→</i><span>ตรวจสอบ</span><i>→</i><span>รับ QR</span>
+          </div>
         </div>
       </div>
     </section>
 
     <main class="content">
-      <div class="card one-liner">สำหรับนักเรียนและนักศึกษาที่อยากเข้าใจเรื่องเงินแบบสนุกขึ้น ผ่านการเล่นจริง ไม่ใช่การนั่งฟังยาว ๆ</div>
+      <div class="card one-liner"><strong>เล่นจริง ตัดสินใจจริง เห็นผลจริง</strong><br>เข้าใจเรื่องเงินผ่านเกม โดยไม่ต้องนั่งฟังยาว ๆ</div>
       <div id="eventError" class="notice error hidden" role="alert"></div>
     </main>
 
@@ -116,31 +123,42 @@
       </div>
 
       <div id="step2" class="step">
-        <div class="form-title">รู้จักคุณอีกนิด</div>
-
-        <fieldset class="field fieldset-reset">
-          <legend>เวลาได้เงินมา คุณเป็นสายไหน? <span class="optional">ไม่บังคับ</span></legend>
-          <div class="radio-grid">
-            <label class="radio-card"><input type="radio" name="moneyStyle" value="เก็บก่อน"> <span>เก็บก่อน ค่อยตัดสินใจ</span></label>
-            <label class="radio-card"><input type="radio" name="moneyStyle" value="ใช้ตามเป้าหมาย"> <span>ใช้ตามเป้าหมาย</span></label>
-            <label class="radio-card"><input type="radio" name="moneyStyle" value="มองหาโอกาส"> <span>มองหาโอกาสลงทุน</span></label>
-            <label class="radio-card"><input type="radio" name="moneyStyle" value="แล้วแต่สถานการณ์"> <span>แล้วแต่สถานการณ์</span></label>
-          </div>
-        </fieldset>
-
-        <div class="field">
-          <label for="moneyGoal">เรื่องเงินที่อยากเข้าใจมากขึ้น <span class="optional">ไม่บังคับ</span></label>
-          <textarea id="moneyGoal" name="moneyGoal" maxlength="500" placeholder="ตอบสั้น ๆ ได้เลย" aria-describedby="moneyGoalCount"></textarea>
-          <small id="moneyGoalCount">สูงสุด 500 ตัวอักษร</small>
-        </div>
+        <div class="form-title">ตรวจสอบและส่ง</div>
 
         <section class="review-card" aria-labelledby="reviewHeading">
           <div class="review-head">
-            <h2 id="reviewHeading">ตรวจข้อมูลก่อนส่ง</h2>
-            <button id="editDetailsBtn" class="text-button inline" type="button">แก้ไข</button>
+            <div>
+              <span class="review-kicker">ข้อมูลสำหรับยืนยันสิทธิ์</span>
+              <h2 id="reviewHeading">ตรวจข้อมูลก่อนส่ง</h2>
+            </div>
+            <button id="editDetailsBtn" class="text-button inline" type="button">แก้ไขข้อมูล</button>
           </div>
           <div id="reviewSummary" class="review-summary"></div>
         </section>
+
+        <details id="optionalDetails" class="optional-panel">
+          <summary>
+            <span>อยากบอกเราเพิ่มอีกนิด</span>
+            <small>ไม่บังคับ</small>
+          </summary>
+          <div class="optional-panel-body">
+            <fieldset class="field fieldset-reset">
+              <legend>เวลาได้เงินมา คุณเป็นสายไหน?</legend>
+              <div class="radio-grid">
+                <label class="radio-card"><input type="radio" name="moneyStyle" value="เก็บก่อน"> <span>เก็บก่อน ค่อยตัดสินใจ</span></label>
+                <label class="radio-card"><input type="radio" name="moneyStyle" value="ใช้ตามเป้าหมาย"> <span>ใช้ตามเป้าหมาย</span></label>
+                <label class="radio-card"><input type="radio" name="moneyStyle" value="มองหาโอกาส"> <span>มองหาโอกาสลงทุน</span></label>
+                <label class="radio-card"><input type="radio" name="moneyStyle" value="แล้วแต่สถานการณ์"> <span>แล้วแต่สถานการณ์</span></label>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label for="moneyGoal">เรื่องเงินที่อยากเข้าใจมากขึ้น</label>
+              <textarea id="moneyGoal" name="moneyGoal" maxlength="500" placeholder="ตอบสั้น ๆ ได้เลย" aria-describedby="moneyGoalCount"></textarea>
+              <small id="moneyGoalCount">สูงสุด 500 ตัวอักษร</small>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div id="submitError" class="notice error hidden" role="alert"></div>
@@ -159,9 +177,9 @@
     <div class="sticky-cta">
       <div class="action-row">
         <button id="regBack" class="secondary hidden" type="button">ย้อนกลับ</button>
-        <button id="regAction" class="primary" type="button">ถัดไป</button>
+        <button id="regAction" class="primary" type="submit" form="regForm">ถัดไป</button>
       </div>
-      <div id="regHelp" class="cta-help">Step 1 จาก 2</div>
+      <div id="regHelp" class="cta-help" aria-live="polite">Step 1 จาก 2</div>
     </div>
   </section>
 

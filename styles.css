@@ -63,3 +63,53 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
   html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* Participant UX/UI refinement — 2026-09-18 */
+:root{--focus:#4f8ff7;--participant-cta-space:154px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.event-tag{display:inline-flex;align-items:center;min-height:28px;padding:5px 9px;border:1px solid rgba(255,255,255,.28);border-radius:999px;color:#fff;background:#403247;letter-spacing:.04em}
+.hero-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.hero-seat-badge{display:inline-flex;align-items:center;min-height:34px;padding:7px 11px;border-radius:999px;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);font-size:12px;font-weight:950;box-shadow:3px 3px 0 var(--purple)}
+.hero-meta-note{font-size:12px;font-weight:800;color:#e8deec}
+.status-note{background:#f6effa;border:1px solid #d8c5e7;border-radius:16px}
+.status-icon{background:var(--purple);color:#fff}
+.status-copy{min-width:0;flex:1}.status-note p{font-size:12px;color:#5d5163}
+.process-steps{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:11px;font-weight:900;color:#5f376f}
+.process-steps span{padding:4px 7px;border-radius:999px;background:#fff;border:1px solid #d8c5e7}.process-steps i{font-style:normal;color:#9679a2}
+.content{padding-bottom:calc(var(--participant-cta-space) + env(safe-area-inset-bottom))}
+.sticky-cta{padding:11px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(244,239,246,.94);border-top:1px solid rgba(113,104,120,.18);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.primary{transition:transform .14s ease,box-shadow .14s ease,background-color .14s ease}
+.form-body{padding-bottom:calc(var(--participant-cta-space) + env(safe-area-inset-bottom))}
+.back-link{appearance:none;-webkit-appearance:none;min-height:44px;display:inline-flex;align-items:center;border:0;background:transparent;color:#f0e7f5;padding:4px 0;margin:0;font-weight:900;font-size:13px;text-align:left}
+.field small,.field .error,.cta-help,.privacy-note,.status-meta,.status-help{font-size:12px}
+.privacy-note{line-height:1.6}
+.field input,.field select,.field textarea{scroll-margin-top:112px}
+.text-button.inline{min-height:44px;padding:8px 6px}
+.review-card{margin:0 0 16px;padding:16px;border-width:1px;box-shadow:0 6px 0 rgba(23,18,29,.06)}
+.review-head{align-items:flex-start}.review-head h2{font-size:18px;margin:2px 0 0}.review-kicker{display:block;font-size:10px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--purple)}
+.review-row{font-size:13px;padding:10px 0}.review-row span{color:#615869}
+.optional-panel{margin-top:12px;border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+.optional-panel summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;cursor:pointer;font-size:13px;font-weight:900;list-style:none}
+.optional-panel summary::-webkit-details-marker{display:none}.optional-panel summary::after{content:"＋";font-size:18px;color:var(--purple);font-weight:900}
+.optional-panel[open] summary::after{content:"−"}.optional-panel summary small{margin-left:auto;color:var(--muted);font-size:11px;font-weight:800}
+.optional-panel-body{padding:2px 14px 14px;border-top:1px solid var(--line)}
+.optional-panel-body .fieldset-reset{margin-top:14px}
+.flow-mode .topbar{display:none}
+.flow-mode .form-head{padding:10px 18px 13px;position:sticky;top:0;z-index:35}
+.flow-mode .form-head h1{font-size:25px;margin:2px 0}.flow-mode .form-head p{font-size:12px}
+.flow-mode .step-row{margin-top:9px}.flow-mode .progress i{height:4px}
+.notice.error:focus{outline:3px solid var(--focus);outline-offset:3px}
+@media(max-width:420px){
+  :root{--participant-cta-space:148px}
+  .hero{padding-top:20px}.hero h1{font-size:46px;margin-top:12px}.hero-sub{font-size:15px;line-height:1.45}
+  .hero-art{height:188px;margin-top:15px}
+  .hero-meta{margin-top:11px}.hero-seat-badge{font-size:11px}.hero-meta-note{font-size:11px}
+  .info-strip{padding:13px 14px}.content{padding-left:14px;padding-right:14px}
+  .sticky-cta{padding-left:14px;padding-right:14px}
+  .form-body{padding-left:14px;padding-right:14px}
+  .review-row{grid-template-columns:86px 1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .primary{transition:none}
+}
