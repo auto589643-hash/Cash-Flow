@@ -169,11 +169,18 @@ async function fetchBootstrap(){
     return await api('adminBootstrap',{roundCode:state.roundCode});
   }catch(err){
     if(err.status===401)throw err;
-    const [dash,rounds]=await Promise.all([
-      api('adminDashboard',{roundCode:state.roundCode}),
-      api('listRounds')
-    ]);
-    return {...dash,rounds:rounds.rounds||[]};
+    const roundsResponse=await api('listRounds');
+    const rounds=roundsResponse.rounds||[];
+    const target=
+      rounds.find(r=>r.round_code===state.roundCode)||
+      rounds.find(r=>r.is_public_active)||
+      rounds.find(r=>r.status==='Open')||
+      rounds[0];
+    if(!target)throw err;
+    state.roundCode=target.round_code;
+    sessionStorage.setItem('cashflow_admin_round',state.roundCode);
+    const dash=await api('adminDashboard',{roundCode:state.roundCode});
+    return {...dash,rounds};
   }
 }
 
