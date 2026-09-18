@@ -9,33 +9,53 @@
 6. Deploy → New deployment → Web app.
    - Execute as: Me
    - Who has access: Anyone
-7. Use the final `/exec` URL as the website backend.
+7. Use the final `/exec` URL as Vercel `APPS_SCRIPT_URL`.
 
-## Upgrade from v1 to v2
-1. Replace the existing Apps Script `Code.gs` with the latest `apps-script/Code.gs`.
-2. Run `setupCashflow()` once again.
-   - Existing registration data is preserved.
-   - Missing headers are appended automatically.
-   - A new `EmailQueue` sheet is created.
-   - A 1-minute `processEmailQueue` trigger is installed if it does not already exist.
-3. Deploy → Manage deployments → Edit the existing Web app deployment → New version → Deploy.
+## Upgrade
+1. Replace the existing Apps Script `Code.gs` with the latest file.
+2. Run `setupCashflow()` again.
+   - Existing data is preserved.
+   - Missing registration columns are appended automatically, including manage/cancel/reapply fields.
+   - `EmailQueue` is created if missing.
+   - A 1-minute `processEmailQueue` trigger is installed if missing.
+3. Deploy → Manage deployments → Edit existing Web app deployment → New version → Deploy.
    - Keep Execute as: Me.
    - Keep Who has access: Anyone.
    - The `/exec` URL should remain the same.
 
+## Settings
+The Admin UI can set `active_round_code` by choosing “ตั้งเป็น Public”.
+
+Optional Settings rows:
+- `public_app_url` — defaults to `https://cashflow-meetup-public.vercel.app/participant/`
+- `email_sender_name` — defaults to `CA$HFLOW Meetup`
+- `admin_session_minutes` — defaults to 360 and is clamped between 5 and 360 minutes
+
+## Registration behavior
+- Explicit round codes are exact-match only.
+- Active duplicate contact data is blocked.
+- Rejected/Cancelled registrations can reapply as a new record.
+- Thai mobile validation is server-authoritative.
+- Full capacity creates `Waitlist` registrations automatically.
+- Participant cancellation requires the opaque manage token sent by email.
+
 ## Email behavior
-Only two automatic email events exist:
-- Submission email: queued immediately after a participant submits the application.
-- Approval email: queued only when Admin changes a registration to `Approved`.
+Automatic email events:
+- Submission/Waitlist email after a successful registration.
+- Approval email when Admin moves a registration to `Approved`.
 
-Waitlist, Reject, Check-in and ordinary Admin refresh actions do not send email.
+Email sending is asynchronous through `EmailQueue`.
 
-Email sending is processed asynchronously from `EmailQueue`, so participant saves and Admin approvals do not wait for Gmail delivery. The queue normally processes within about one minute.
+The worker re-validates current registration state immediately before sending an approval email. If the participant is no longer Approved, the queued approval email is cancelled rather than sent.
 
-## Performance changes
-- Participant event data uses short server cache + browser stale-while-revalidate cache.
-- Admin uses one `adminBootstrap` request instead of separate dashboard + rounds requests when the v2 backend is deployed.
-- Admin renders a recent session snapshot immediately and refreshes in the background every 15 seconds while visible.
-- Registration and approval logic read the registration table once per write path instead of repeatedly scanning it.
+## Check-in integrity
+- Only `Approved` registrations may check in.
+- Repeated check-in is idempotent and returns an “already checked in” result.
+- Once checked in, ordinary Admin status changes are blocked.
+- QR and manage tokens are separate credentials.
 
-The participant endpoint is public by design. Admin actions still require a server-issued session token after password verification in Apps Script.
+## Performance
+- Participant round data uses short Apps Script cache + browser cache.
+- Admin uses one `adminBootstrap` request where available.
+- Admin renders a recent session snapshot immediately, labels it as cached/stale, then refreshes every 15 seconds while visible.
+- Registration/status writes use `LockService` where concurrent writes can create inconsistent state.
