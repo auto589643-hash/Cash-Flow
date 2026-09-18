@@ -38,9 +38,9 @@
     </div>
 
     <nav class="admin-nav" role="tablist" aria-label="เมนูหลังบ้าน">
-      <button id="tabBtnApplicants" class="active" role="tab" aria-selected="true" aria-controls="tab-applicants" data-tab="applicants">ผู้สมัคร</button>
-      <button id="tabBtnRounds" role="tab" aria-selected="false" aria-controls="tab-rounds" data-tab="rounds">รอบกิจกรรม</button>
-      <button id="tabBtnCheckin" role="tab" aria-selected="false" aria-controls="tab-checkin" data-tab="checkin">Check-in</button>
+      <button type="button" id="tabBtnApplicants" class="active" role="tab" aria-selected="true" aria-controls="tab-applicants" data-tab="applicants">ผู้สมัคร</button>
+      <button type="button" id="tabBtnRounds" role="tab" aria-selected="false" aria-controls="tab-rounds" data-tab="rounds">รอบกิจกรรม</button>
+      <button type="button" id="tabBtnCheckin" role="tab" aria-selected="false" aria-controls="tab-checkin" data-tab="checkin">Check-in</button>
       <button id="logoutBtn" type="button">ออกจากระบบ</button>
     </nav>
   </header>
@@ -67,12 +67,12 @@
       </div>
 
       <div class="filters" aria-label="กรองสถานะ">
-        <button class="filter-chip active" data-status="Pending" aria-pressed="true">Pending</button>
-        <button class="filter-chip" data-status="Approved" aria-pressed="false">Approved</button>
-        <button class="filter-chip" data-status="Waitlist" aria-pressed="false">Waitlist</button>
-        <button class="filter-chip" data-status="Rejected" aria-pressed="false">Rejected</button>
-        <button class="filter-chip" data-status="Cancelled" aria-pressed="false">Cancelled</button>
-        <button class="filter-chip" data-status="ALL" aria-pressed="false">ทั้งหมด</button>
+        <button type="button" class="filter-chip active" data-status="Pending" aria-pressed="true">Pending</button>
+        <button type="button" class="filter-chip" data-status="Approved" aria-pressed="false">Approved</button>
+        <button type="button" class="filter-chip" data-status="Waitlist" aria-pressed="false">Waitlist</button>
+        <button type="button" class="filter-chip" data-status="Rejected" aria-pressed="false">Rejected</button>
+        <button type="button" class="filter-chip" data-status="Cancelled" aria-pressed="false">Cancelled</button>
+        <button type="button" class="filter-chip" data-status="ALL" aria-pressed="false">ทั้งหมด</button>
       </div>
 
       <div id="applicantError" class="notice error hidden" role="alert"></div>
