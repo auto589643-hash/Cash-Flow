@@ -1,3 +1,4 @@
+const CASHFLOW_API_BASE=location.hostname.endsWith('.supabase.co')?'https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow':'/api/backend';
 const DEFAULT_ROUND={
   round_code:'cashflow-01',
   title:'CA$HFLOW Meetup',
@@ -42,7 +43,7 @@ async function api(action,payload=null,timeoutMs=18000){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
-    let url='/api/backend';
+    let url=CASHFLOW_API_BASE;
     let opt={signal:controller.signal};
     if(payload===null){
       const qs=new URLSearchParams({action});
