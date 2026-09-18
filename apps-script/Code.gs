@@ -36,7 +36,7 @@ function setupAdminPassword(){
 function doGet(e){
   try{
     const a=(e&&e.parameter&&e.parameter.action)||'health';
-    if(a==='health')return json_({ok:true,configured:isConfigured_(),version:'2.0'});
+    if(a==='health')return json_({ok:true,configured:isConfigured_(),version:'3.0'});
     if(a==='publicRound')return json_({ok:true,...publicRound_((e.parameter||{}).roundCode)});
     return json_({ok:false,error:'unknown_action'},400);
   }catch(err){return json_({ok:false,error:'server_error',message:userMessage_(err.message)},500)}
@@ -291,7 +291,7 @@ function cancelRegistration_(body){
 
     const updated={...reg,...patch};
     delete updated.__row;
-    if(reg.approval_email_sent_at&&!hasOpenEmailQueue_('status_update',reg.registration_id)){
+    if(!hasOpenEmailQueue_('status_update',reg.registration_id)){
       enqueueEmail_('status_update',updated,findRound_(reg.round_code));
     }
     return registrationStatusResponse_(updated);
@@ -402,7 +402,18 @@ function updateRegistrationStatus_(body){
       if(cap&&approved>=cap)throw new Error('capacity_full');
     }
 
-    const needsStatusUpdate=reg.status==='Approved'&&status!=='Approved'&&!!reg.approval_email_sent_at;
+    const statusChanged=reg.status!==status;
+    const needsStatusUpdate=
+      statusChanged&&
+      status!=='Approved'&&
+      (
+        status==='Rejected'||
+        status==='Cancelled'||
+        status==='Pending'||
+        (status==='Waitlist'&&!!reg.submission_email_sent_at)||
+        !!reg.approval_email_sent_at
+      );
+
     if(reg.status==='Approved'&&status!=='Approved'){
       cancelQueuedApprovalEmails_(reg.registration_id);
     }
@@ -580,8 +591,11 @@ function processEmailQueue(){
         return;
       }
 
-      if(q.type==='submission'&&reg.status==='Cancelled'){
-        updateObjectRow_(SHEETS.MAIL,q.__row,{status:'Cancelled',last_error:'registration cancelled before submission email'});
+      if(q.type==='submission'&&!['Pending','Waitlist'].includes(reg.status)){
+        updateObjectRow_(SHEETS.MAIL,q.__row,{
+          status:'Cancelled',
+          last_error:'registration state moved beyond submission email before send'
+        });
         return;
       }
 
@@ -710,7 +724,7 @@ function sendStatusUpdateEmail_(reg,round){
     badgeColor:BRAND.ink,
     eyebrow:'CA$HFLOW MEETUP',
     title:title,
-    intro:'สวัสดี '+escapeHtml_(reg.nickname||reg.full_name)+' สถานะใบสมัครของคุณมีการเปลี่ยนแปลงจากสิทธิ์ที่เคยได้รับ กรุณายึดสถานะล่าสุดใน Email นี้และหน้าเช็กสถานะเป็นข้อมูลปัจจุบัน',
+    intro:'สวัสดี '+escapeHtml_(reg.nickname||reg.full_name)+' สถานะใบสมัครของคุณมีการเปลี่ยนแปลง กรุณายึดสถานะล่าสุดใน Email นี้และหน้าเช็กสถานะเป็นข้อมูลปัจจุบัน',
     body:referenceCardHtml_(reg.reference_code,'Reference Code')+eventCardHtml_(round)+manageButtonHtml_(reg,round),
     footer:'Email นี้ส่งอัตโนมัติเมื่อสถานะใบสมัครเปลี่ยนหลังเคยได้รับการอนุมัติ'
   });
@@ -840,21 +854,18 @@ function decorateAdminRegistrations_(regs,mail){
       ).map(x=>x.registration_id)
     );
 
-    let type='submission';
-    if(r.status==='Approved')type='approval';
-    else if(r.approval_email_sent_at)type='status_update';
-
-    const latest=[...mail].filter(q=>q.registration_id===r.registration_id&&q.type===type)
+    const latest=[...mail]
+      .filter(q=>q.registration_id===r.registration_id)
       .sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)))[0];
-    const sentAt=type==='approval'
-      ?r.approval_email_sent_at
-      :(type==='submission'?r.submission_email_sent_at:(latest?.sent_at||''));
-    const emailStatus=sentAt?'Sent':(latest?.status||'NotQueued');
+    const fallbackSentAt=r.approval_email_sent_at||r.submission_email_sent_at||'';
+    const emailStatus=latest?.status||(fallbackSentAt?'Sent':'NotQueued');
+    const emailType=latest?.type||(r.approval_email_sent_at?'approval':(r.submission_email_sent_at?'submission':''));
+    const sentAt=latest?.sent_at||fallbackSentAt;
 
     return {
       ...adminRegistration_(r),
       duplicate_contact_count:dupIds.size,
-      email_delivery:{type,status:emailStatus,sent_at:sentAt||latest?.sent_at||''}
+      email_delivery:{type:emailType,status:emailStatus,sent_at:sentAt}
     };
   });
 }
