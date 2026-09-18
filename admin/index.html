@@ -1,8 +1,207 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#17121d"><title>CA$HFLOW Meetup — Admin</title><link rel="stylesheet" href="/styles.css"></head>
-<body><section id="loginView" class="admin-login"><form id="loginForm" class="login-card"><div class="brand">CA<span>$</span>HFLOW ADMIN</div><h1>เข้าสู่ระบบหลังบ้าน</h1><p>ใช้รหัส Admin ที่ตั้งไว้ใน Apps Script ระบบจะเก็บ session เฉพาะแท็บนี้และไม่บันทึกรหัสผ่าน</p><div class="field"><label for="adminPassword">รหัส Admin</label><input id="adminPassword" type="password" autocomplete="current-password" required></div><div id="loginError" class="notice error hidden"></div><button class="primary" type="submit">เข้าสู่ระบบ</button></form></section>
-<section id="adminView" class="admin-wrap hidden"><header class="admin-head"><div class="brand">CA<span>$</span>HFLOW ADMIN</div><p id="adminRoundMeta">กำลังโหลด…</p><nav class="admin-nav"><button class="active" data-tab="applicants">ผู้สมัคร</button><button data-tab="rounds">รอบกิจกรรม</button><button data-tab="checkin">Check-in</button><button id="logoutBtn">ออกจากระบบ</button></nav></header><div id="setupBanner" class="setup-banner hidden"></div>
-<main class="admin-body">
-<section id="tab-applicants"><div class="stats"><div class="stat"><b id="statTotal">0</b><span>สมัครทั้งหมด</span></div><div class="stat"><b id="statPending">0</b><span>รอตรวจ</span></div><div class="stat"><b id="statApproved">0</b><span>อนุมัติ</span></div><div class="stat"><b id="statChecked">0</b><span>Check-in</span></div></div><div class="toolbar"><input id="searchInput" class="search" placeholder="ค้นชื่อ / เบอร์ / Email / Reference"><button id="refreshBtn" class="secondary">รีเฟรช</button></div><div class="filters"><button class="filter-chip active" data-status="Pending">Pending</button><button class="filter-chip" data-status="Approved">Approved</button><button class="filter-chip" data-status="Waitlist">Waitlist</button><button class="filter-chip" data-status="Rejected">Rejected</button><button class="filter-chip" data-status="ALL">ทั้งหมด</button></div><div id="applicantError" class="notice error hidden"></div><div id="applicantList" class="applicant-list"></div></section>
-<section id="tab-rounds" class="hidden"><div class="round-grid"><div class="round-list"><h2>รอบกิจกรรม</h2><div id="roundList"></div></div><form id="roundForm" class="round-form"><h2 id="roundFormTitle">สร้างรอบใหม่</h2><input id="roundId" type="hidden"><div class="field"><label>Round code *</label><input id="roundCode" required maxlength="60" placeholder="เช่น cashflow-02"></div><div class="field"><label>ชื่อรอบ *</label><input id="roundTitle" required maxlength="120"></div><div class="field"><label>วันที่จริง (YYYY-MM-DD)</label><input id="roundDate" type="date"><small>จำเป็นสำหรับ Add to Calendar; ถ้ายังไม่ยืนยันปีให้เว้นไว้</small></div><div class="field"><label>ข้อความวันที่</label><input id="roundDateLabel" placeholder="เช่น 19 กันยายน"></div><div class="field"><label>เวลาเริ่ม</label><input id="roundStart" type="time"></div><div class="field"><label>เวลาจบ</label><input id="roundEnd" type="time"></div><div class="field"><label>สถานที่</label><input id="roundLocation"></div><div class="field"><label>Google Maps / Location URL</label><input id="roundLocationUrl" type="url"></div><div class="field"><label>สถานะ</label><select id="roundStatus"><option>Draft</option><option>Open</option><option>Closed</option><option>Completed</option><option>Cancelled</option></select></div><div class="field"><label><input id="capacityEnabled" type="checkbox" checked> จำกัดจำนวนที่อนุมัติ</label></div><div class="field"><label>จำนวนสูงสุดที่อนุมัติ</label><input id="approvalCapacity" type="number" min="1" value="30"></div><div id="roundError" class="notice error hidden"></div><button class="primary" type="submit">บันทึกรอบ</button></form></div></section>
-<section id="tab-checkin" class="hidden"><div class="checkin-grid"><div class="scan-card"><h2>สแกน QR</h2><div class="scan-box" id="scanBox"><span>พร้อมเปิดกล้อง</span><video id="scannerVideo" class="hidden" playsinline muted></video></div><button id="scanBtn" class="primary" type="button" style="margin-top:12px">เปิดกล้องสแกน</button><p id="scanHint" class="cta-help">ถ้าเบราว์เซอร์ไม่รองรับ ให้ใช้ค้นหาด้านขวา</p></div><div class="manual-card"><h2>ค้นหา Check-in</h2><div class="field"><label for="checkQuery">ชื่อ / เบอร์ / Reference</label><input id="checkQuery"></div><button id="checkSearchBtn" class="primary" type="button">ค้นหา</button><div id="checkResult" class="check-result"></div></div></div></section>
-</main></section><script src="/admin/admin.js" defer></script></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17121d">
+  <title>CA$HFLOW Meetup — Admin</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<section id="loginView" class="admin-login">
+  <form id="loginForm" class="login-card">
+    <div class="brand">CA<span>$</span>HFLOW ADMIN</div>
+    <h1>เข้าสู่ระบบหลังบ้าน</h1>
+    <p>ใช้รหัส Admin ที่ตั้งไว้ใน Apps Script ระบบจะเก็บ session เฉพาะแท็บนี้และไม่บันทึกรหัสผ่าน</p>
+    <div class="field">
+      <label for="adminPassword">รหัส Admin</label>
+      <input id="adminPassword" type="password" autocomplete="current-password" required>
+    </div>
+    <div id="loginError" class="notice error hidden" role="alert"></div>
+    <button class="primary" type="submit">เข้าสู่ระบบ</button>
+  </form>
+</section>
+
+<section id="adminView" class="admin-wrap hidden">
+  <header class="admin-head">
+    <div class="admin-title-row">
+      <div class="brand">CA<span>$</span>HFLOW ADMIN</div>
+      <div id="syncStatus" class="sync-pill" role="status" aria-live="polite">กำลังเชื่อมต่อ…</div>
+    </div>
+
+    <div class="admin-context">
+      <div class="context-field">
+        <label for="roundSelector">กำลังจัดการรอบ</label>
+        <select id="roundSelector" aria-describedby="adminRoundMeta"></select>
+      </div>
+      <p id="adminRoundMeta">กำลังโหลด…</p>
+    </div>
+
+    <nav class="admin-nav" role="tablist" aria-label="เมนูหลังบ้าน">
+      <button type="button" id="tabBtnApplicants" class="active" role="tab" aria-selected="true" aria-controls="tab-applicants" data-tab="applicants">ผู้สมัคร</button>
+      <button type="button" id="tabBtnRounds" role="tab" aria-selected="false" aria-controls="tab-rounds" data-tab="rounds">รอบกิจกรรม</button>
+      <button type="button" id="tabBtnCheckin" role="tab" aria-selected="false" aria-controls="tab-checkin" data-tab="checkin">Check-in</button>
+      <button id="logoutBtn" type="button">ออกจากระบบ</button>
+    </nav>
+  </header>
+
+  <div id="setupBanner" class="setup-banner hidden" role="alert"></div>
+
+  <main class="admin-body">
+    <section id="tab-applicants" role="tabpanel" aria-labelledby="tabBtnApplicants">
+      <div class="stats">
+        <div class="stat"><b id="statTotal">0</b><span>สมัครทั้งหมด</span></div>
+        <div class="stat"><b id="statPending">0</b><span>รอตรวจ</span></div>
+        <div class="stat"><b id="statApproved">0</b><span>อนุมัติ</span></div>
+        <div class="stat"><b id="statWaitlist">0</b><span>สำรอง</span></div>
+        <div class="stat"><b id="statChecked">0</b><span>Check-in</span></div>
+        <div class="stat"><b id="statCapacity">—</b><span>ที่ว่างอนุมัติ</span></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-field">
+          <label for="searchInput">ค้นหาผู้สมัคร</label>
+          <input id="searchInput" class="search" placeholder="ชื่อ / เบอร์ / Email / Reference" autocomplete="off">
+        </div>
+        <button id="refreshBtn" class="secondary" type="button">รีเฟรช</button>
+      </div>
+
+      <div class="filters" aria-label="กรองสถานะ">
+        <button type="button" class="filter-chip active" data-status="Pending" aria-pressed="true">Pending</button>
+        <button type="button" class="filter-chip" data-status="Approved" aria-pressed="false">Approved</button>
+        <button type="button" class="filter-chip" data-status="Waitlist" aria-pressed="false">Waitlist</button>
+        <button type="button" class="filter-chip" data-status="Rejected" aria-pressed="false">Rejected</button>
+        <button type="button" class="filter-chip" data-status="Cancelled" aria-pressed="false">Cancelled</button>
+        <button type="button" class="filter-chip" data-status="ALL" aria-pressed="false">ทั้งหมด</button>
+      </div>
+
+      <div id="applicantError" class="notice error hidden" role="alert"></div>
+      <div id="applicantList" class="applicant-list"></div>
+    </section>
+
+    <section id="tab-rounds" class="hidden" role="tabpanel" aria-labelledby="tabBtnRounds">
+      <div class="round-grid">
+        <div class="round-list">
+          <div class="section-head">
+            <div>
+              <h2>รอบกิจกรรม</h2>
+              <p>เลือกรอบเพื่อจัดการ หรือกำหนดรอบ Public ที่หน้า Participant จะเปิดโดยค่าเริ่มต้น</p>
+            </div>
+            <button id="newRoundBtn" class="secondary" type="button">สร้างรอบใหม่</button>
+          </div>
+          <div id="roundList"></div>
+        </div>
+
+        <form id="roundForm" class="round-form">
+          <h2 id="roundFormTitle">สร้างรอบใหม่</h2>
+          <input id="roundId" type="hidden">
+
+          <div class="field">
+            <label for="roundCode">Round code <span class="req">*</span></label>
+            <input id="roundCode" required maxlength="60" placeholder="เช่น cashflow-02">
+          </div>
+
+          <div class="field">
+            <label for="roundTitle">ชื่อรอบ <span class="req">*</span></label>
+            <input id="roundTitle" required maxlength="120">
+          </div>
+
+          <div class="field">
+            <label for="roundDate">วันที่จริง</label>
+            <input id="roundDate" type="date">
+            <small>ใช้สำหรับ Add to Calendar; ถ้ายังไม่ยืนยันปีให้เว้นไว้</small>
+          </div>
+
+          <div class="field">
+            <label for="roundDateLabel">ข้อความวันที่</label>
+            <input id="roundDateLabel" placeholder="เช่น 19 กันยายน">
+          </div>
+
+          <div class="form-grid-two">
+            <div class="field">
+              <label for="roundStart">เวลาเริ่ม</label>
+              <input id="roundStart" type="time">
+            </div>
+            <div class="field">
+              <label for="roundEnd">เวลาจบ</label>
+              <input id="roundEnd" type="time">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="roundLocation">สถานที่</label>
+            <input id="roundLocation">
+          </div>
+
+          <div class="field">
+            <label for="roundLocationUrl">Google Maps / Location URL</label>
+            <input id="roundLocationUrl" type="url">
+          </div>
+
+          <div class="field">
+            <label for="roundStatus">สถานะรอบ</label>
+            <select id="roundStatus">
+              <option>Draft</option>
+              <option>Open</option>
+              <option>Closed</option>
+              <option>Completed</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+
+          <div class="field check-field">
+            <label for="capacityEnabled">
+              <input id="capacityEnabled" type="checkbox" checked>
+              จำกัดจำนวนที่อนุมัติ
+            </label>
+            <small>เมื่อเต็ม ผู้สมัครใหม่จะเข้า Waitlist อัตโนมัติ</small>
+          </div>
+
+          <div id="capacityField" class="field">
+            <label for="approvalCapacity">จำนวนสูงสุดที่อนุมัติ</label>
+            <input id="approvalCapacity" type="number" min="1" value="30" inputmode="numeric">
+          </div>
+
+          <div id="roundError" class="notice error hidden" role="alert"></div>
+
+          <div class="form-actions">
+            <button class="primary" type="submit">บันทึกรอบ</button>
+            <button id="resetRoundBtn" class="secondary" type="button">ล้างฟอร์ม</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="tab-checkin" class="hidden" role="tabpanel" aria-labelledby="tabBtnCheckin">
+      <div class="checkin-grid">
+        <div class="scan-card">
+          <h2>สแกน QR</h2>
+          <p class="section-help">กล้องจะสแกนต่อเนื่องอัตโนมัติ และหยุดชั่วคราวหลังพบแต่ละคน</p>
+          <div class="scan-box" id="scanBox">
+            <span id="scanPlaceholder">พร้อมเปิดกล้อง</span>
+            <video id="scannerVideo" class="hidden" playsinline muted></video>
+            <canvas id="scannerCanvas" class="hidden" aria-hidden="true"></canvas>
+          </div>
+          <div id="scanResult" class="scan-result" aria-live="polite"></div>
+          <button id="scanBtn" class="primary" type="button">เปิดกล้องสแกน</button>
+          <p id="scanHint" class="cta-help">รองรับ BarcodeDetector เมื่อมี และใช้ jsQR เป็น fallback สำหรับ Safari/iPhone</p>
+        </div>
+
+        <div class="manual-card">
+          <h2>ค้นหา Check-in</h2>
+          <div class="field">
+            <label for="checkQuery">ชื่อ / เบอร์ / Reference</label>
+            <input id="checkQuery" autocomplete="off">
+          </div>
+          <button id="checkSearchBtn" class="primary" type="button">ค้นหา</button>
+          <div id="checkResult" class="check-result" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<script src="/assets/jsQR.js" defer></script>
+<script src="/admin/admin.js" defer></script>
+</body>
+</html>
