@@ -43,6 +43,7 @@ Optional Settings rows:
 Automatic email events:
 - Submission/Waitlist email after a successful registration.
 - Approval email when Admin moves a registration to `Approved`.
+- Status-correction email when a previously Approved registration is later demoted or cancelled.
 
 Email sending is asynchronous through `EmailQueue`.
 
