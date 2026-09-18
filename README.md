@@ -3,11 +3,11 @@
 Production registration, approval, email and check-in system with separate participant and admin routes.
 
 ## Live routes
-- Participant: `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow-web/participant/`
-- Admin: `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow-web/admin/`
+- Participant: `https://cashflow-meetup-public.vercel.app/participant/`
+- Admin: `https://cashflow-meetup-public.vercel.app/admin/`
 - API: `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow`
 
-The repository still contains `/api/backend` as an optional Vercel same-origin proxy, but the canonical production web host is the Supabase `cashflow-web` Edge Function.
+Vercel is the canonical production web host. `cashflow-web` remains a tracked Supabase Edge fallback/reference bundle, but Supabase Edge gateway response headers are not used as the primary browser surface.
 
 ## Production data authority
 Supabase is the production authority for CA$HFLOW application data.
@@ -25,7 +25,8 @@ Application tables:
 Runtime services:
 - `cashflow` Edge Function — participant/admin API
 - `cashflow-mailer` Edge Function — Gmail transactional mail worker
-- `cashflow-web` Edge Function — canonical production web host
+- Vercel — canonical participant/admin web host
+- `cashflow-web` Edge Function — fallback/reference web bundle
 
 Tracked production source on `main`:
 - `supabase/functions/cashflow/`
@@ -92,18 +93,21 @@ The mail worker re-checks the current registration state immediately before send
 - Security headers are configured in `vercel.json`.
 
 ## Deployment
-Canonical production deployment uses Supabase Edge Functions:
+Canonical production deployment:
 
-- `cashflow-web` — web UI
-- `cashflow` — API
-- `cashflow-mailer` — transactional email worker
+- Vercel — participant/admin web UI
+- `cashflow` Supabase Edge Function — API
+- `cashflow-mailer` Supabase Edge Function — transactional email worker
 
-The optional Vercel proxy defaults to:
+The Vercel same-origin proxy defaults to:
 
 `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow`
 
 Optional Vercel environment override:
 - `CASHFLOW_API_URL`
+
+Transactional-email manage links use:
+`https://cashflow-meetup-public.vercel.app/participant/`
 
 Do not configure the old `APPS_SCRIPT_URL` for production.
 
