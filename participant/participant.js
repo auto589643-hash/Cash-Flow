@@ -170,7 +170,7 @@ function saveRoundCache(round){
 
 async function loadRound(){
   const cached=readRoundCache();
-  if(cached)renderRound(cached,{verified:true});
+  if(cached)renderRound(cached,{verified:false});
   else renderRound(DEFAULT_ROUND,{verified:false});
 
   try{
