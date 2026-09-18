@@ -43,11 +43,12 @@ Optional Settings rows:
 Automatic email events:
 - Submission/Waitlist email after a successful registration.
 - Approval email when Admin moves a registration to `Approved`.
-- Status-correction email when a previously Approved registration is later demoted or cancelled.
+- Status-correction email when the current registration state changes and an updated participant notification is required.
+- On-demand manage-link email after participant phone + email verification.
 
 Email sending is asynchronous through `EmailQueue`.
 
-The worker re-validates current registration state immediately before sending an approval email. If the participant is no longer Approved, the queued approval email is cancelled rather than sent.
+The worker re-validates current registration state immediately before sending. Stale submission/approval/status-correction messages are cancelled rather than sent with obsolete state.
 
 ## Check-in integrity
 - Only `Approved` registrations may check in.
