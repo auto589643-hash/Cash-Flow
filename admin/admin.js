@@ -651,6 +651,7 @@ function scanCanvasForQr(video){
     canvas.height=height;
   }
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  if(!ctx)return '';
   ctx.drawImage(video,0,0,width,height);
   const image=ctx.getImageData(0,0,width,height);
   const code=window.jsQR(image.data,width,height,{inversionAttempts:'dontInvert'});
@@ -661,7 +662,7 @@ async function detectQr(video){
   if(state.detector){
     try{
       const codes=await state.detector.detect(video);
-      if(codes[0]?.rawValue)return codes[0].rawValue;
+      return codes[0]?.rawValue||'';
     }catch{
       state.detector=null;
     }
