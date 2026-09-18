@@ -51,7 +51,7 @@ Participants can:
 ## Email integrity
 Email is queued asynchronously.
 
-Before an approval email is sent, the worker re-checks that the registration is still `Approved`. Pending approval emails are cancelled when status changes away from Approved.
+Before an approval email is sent, the worker re-checks that the registration is still `Approved`. Pending approval emails are cancelled when status changes away from Approved. If an approval email was already sent and the registration is later demoted or cancelled, a status-correction email is queued so the participant is not left relying on stale approval information.
 
 Manage links use a separate opaque `manage_token`; the check-in QR token is not reused for participant account/status management.
 
