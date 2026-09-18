@@ -786,7 +786,6 @@ function cachePut_(key,value,ttl){
 
 function publicRegistration_(r){
   return {
-    registration_id:r.registration_id,
     status:r.status,
     reference_code:r.reference_code,
     submitted_at:r.submitted_at,
