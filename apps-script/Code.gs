@@ -281,6 +281,9 @@ function cancelRegistration_(body){
 
     const updated={...reg,...patch};
     delete updated.__row;
+    if(reg.approval_email_sent_at&&!hasOpenEmailQueue_('status_update',reg.registration_id)){
+      enqueueEmail_('status_update',updated,findRound_(reg.round_code));
+    }
     return registrationStatusResponse_(updated);
   }finally{
     lock.releaseLock();
