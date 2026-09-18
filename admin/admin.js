@@ -1,3 +1,4 @@
+const CASHFLOW_API_BASE=location.hostname.endsWith('.supabase.co')?'https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow':'/api/backend';
 const state={
   token:sessionStorage.getItem('cashflow_admin_token')||'',
   roundCode:sessionStorage.getItem('cashflow_admin_round')||'',
@@ -25,7 +26,7 @@ async function api(action,payload={},timeoutMs=20000){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
-    const r=await fetch('/api/backend',{
+    const r=await fetch(CASHFLOW_API_BASE,{
       method:'POST',
       headers:{'content-type':'application/json'},
       body:JSON.stringify({action,token:state.token,...payload}),
