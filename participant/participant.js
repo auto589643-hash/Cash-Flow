@@ -393,6 +393,12 @@ function showEvent(){
 function showStatus(data=null){
   setView('#statusView');
   $('#statusError').classList.add('hidden');
+
+  if(data&&!state.manageToken){
+    if(!$('#statusPhone').value&&$('#phone').value)$('#statusPhone').value=formatPhone($('#phone').value);
+    if(!$('#statusEmail').value&&$('#email').value)$('#statusEmail').value=$('#email').value.trim();
+  }
+
   if(data)renderStatusResult(data);
   else{
     $('#statusResult').classList.add('hidden');
@@ -409,6 +415,7 @@ function renderStatusResult(data){
     return;
   }
 
+  state.lastStatusData=data;
   const reg=data.registration;
   const checked=reg.checked_in_at?`<div class="status-meta">Check-in: ${esc(reg.checked_in_at)}</div>`:'';
   $('#statusResult').innerHTML=`
@@ -428,8 +435,11 @@ function renderStatusResult(data){
   const canCancel=Boolean(data.can_cancel)&&Boolean(state.manageToken);
   $('#statusCancelBtn').classList.toggle('hidden',!canCancel);
 
-  if(data.can_cancel&&!state.manageToken){
-    $('#statusResult').insertAdjacentHTML('beforeend','<p class="status-help">หากต้องการยกเลิก ใช้ลิงก์ “ดูสถานะ/จัดการใบสมัคร” จาก Email ที่ระบบส่งให้</p>');
+  const canRequestManage=Boolean(data.can_cancel)&&!state.manageToken;
+  $('#statusManageLinkBtn').classList.toggle('hidden',!canRequestManage);
+
+  if(canRequestManage){
+    $('#statusResult').insertAdjacentHTML('beforeend','<p class="status-help">ต้องการยกเลิกใบสมัคร? ส่งลิงก์จัดการแบบปลอดภัยไปที่ Email ที่ใช้สมัครได้</p>');
   }
 }
 
@@ -577,6 +587,35 @@ async function next(){
   }
 }
 
+async function sendManageLink(){
+  const phone=$('#statusPhone').value||$('#phone').value;
+  const email=($('#statusEmail').value||$('#email').value).trim().toLowerCase();
+  if(!isValidThaiMobile(phone)||!email){
+    $('#statusError').textContent='กรุณาตรวจสถานะด้วยเบอร์มือถือและ Email ก่อนขอลิงก์จัดการ';
+    $('#statusError').classList.remove('hidden');
+    return;
+  }
+
+  const btn=$('#statusManageLinkBtn');
+  btn.disabled=true;
+  btn.textContent='กำลังส่ง…';
+  $('#statusError').classList.add('hidden');
+  try{
+    await api('sendManageLink',{
+      roundCode:state.roundCode,
+      phone:normalizeThaiPhone(phone),
+      email
+    },12000);
+    btn.textContent='ส่งแล้ว · ตรวจ Email';
+    $('#statusResult').insertAdjacentHTML('beforeend','<div class="notice success compact">หากข้อมูลตรงกับใบสมัคร ระบบส่งลิงก์จัดการให้แล้ว กรุณาตรวจ Inbox และ Spam/Junk</div>');
+  }catch(err){
+    $('#statusError').textContent=err.message;
+    $('#statusError').classList.remove('hidden');
+    btn.disabled=false;
+    btn.textContent='ส่งลิงก์จัดการไปที่ Email';
+  }
+}
+
 async function cancelManagedRegistration(){
   if(!state.manageToken)return;
   if(!confirm('ยืนยันยกเลิกใบสมัครนี้? หากต้องการเข้าร่วมอีกครั้ง คุณสามารถสมัครใหม่ได้ภายหลัง'))return;
@@ -631,6 +670,7 @@ $('#statusForm').addEventListener('submit',e=>{
   lookupStatusFromForm();
 });
 $('#statusCancelBtn').addEventListener('click',cancelManagedRegistration);
+$('#statusManageLinkBtn').addEventListener('click',sendManageLink);
 $('#statusReapplyBtn').addEventListener('click',()=>{
   const phone=$('#statusPhone').value;
   const email=$('#statusEmail').value;
