@@ -370,12 +370,26 @@ function updateRegistrationStatus_(body){
     const round=findRound_(reg.round_code);
     if(!round)throw new Error('round_not_found');
 
+    if(!ACTIVE_REG_STATUSES.includes(reg.status)&&ACTIVE_REG_STATUSES.includes(status)){
+      const conflict=all.find(x=>
+        x.registration_id!==reg.registration_id&&
+        x.round_code===reg.round_code&&
+        ACTIVE_REG_STATUSES.includes(x.status)&&
+        (
+          normalizeThaiPhone_(x.phone)===normalizeThaiPhone_(reg.phone)||
+          String(x.email||'').toLowerCase()===String(reg.email||'').toLowerCase()
+        )
+      );
+      if(conflict)throw new Error('contact_conflict');
+    }
+
     if(status==='Approved'&&reg.status!=='Approved'&&truthy_(round.capacity_enabled)){
       const cap=Number(round.approval_capacity||0);
       const approved=all.reduce((n,r)=>n+(r.round_code===round.round_code&&r.status==='Approved'?1:0),0);
       if(cap&&approved>=cap)throw new Error('capacity_full');
     }
 
+    const needsStatusUpdate=reg.status==='Approved'&&status!=='Approved'&&!!reg.approval_email_sent_at;
     if(reg.status==='Approved'&&status!=='Approved'){
       cancelQueuedApprovalEmails_(reg.registration_id);
     }
@@ -390,14 +404,22 @@ function updateRegistrationStatus_(body){
     delete updated.__row;
 
     let emailQueued=false;
+    let emailType='';
     if(
       status==='Approved'&&
       reg.status!=='Approved'&&
-      !updated.approval_email_sent_at&&
       !hasOpenEmailQueue_('approval',updated.registration_id)
     ){
       enqueueEmail_('approval',updated,round);
       emailQueued=true;
+      emailType='approval';
+    }else if(
+      needsStatusUpdate&&
+      !hasOpenEmailQueue_('status_update',updated.registration_id)
+    ){
+      enqueueEmail_('status_update',updated,round);
+      emailQueued=true;
+      emailType='status_update';
     }
 
     audit_('admin','status:'+status,reg.round_code,reg.registration_id,clean_(body.note,300));
@@ -405,7 +427,8 @@ function updateRegistrationStatus_(body){
 
     return {
       registration:adminRegistration_(updated),
-      email_queued:emailQueued
+      email_queued:emailQueued,
+      email_type:emailType
     };
   }finally{
     lock.releaseLock();
