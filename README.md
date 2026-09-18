@@ -2,10 +2,12 @@
 
 Production registration, approval, email and check-in system with separate participant and admin routes.
 
-## Routes
-- `/participant/` — public event, registration, status lookup and secure manage-link flow
-- `/admin/` — password-protected applicants, rounds and check-in operations
-- `/api/backend` — same-origin Vercel proxy to the Supabase `cashflow` Edge Function
+## Live routes
+- Participant: `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow-web/participant/`
+- Admin: `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow-web/admin/`
+- API: `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow`
+
+The repository still contains `/api/backend` as an optional Vercel same-origin proxy, but the canonical production web host is the Supabase `cashflow-web` Edge Function.
 
 ## Production data authority
 Supabase is the production authority for CA$HFLOW application data.
@@ -23,6 +25,13 @@ Application tables:
 Runtime services:
 - `cashflow` Edge Function — participant/admin API
 - `cashflow-mailer` Edge Function — Gmail transactional mail worker
+- `cashflow-web` Edge Function — canonical production web host
+
+Tracked production source on `main`:
+- `supabase/functions/cashflow/`
+- `supabase/functions/cashflow-mailer/`
+- `supabase/functions/cashflow-web/`
+- `supabase/migrations/20260918190500_cashflow_v5_production_parity.sql`
 
 The old Google Sheet / Apps Script implementation is legacy only and must not be used as the production database.
 
@@ -77,12 +86,19 @@ The mail worker re-checks the current registration state immediately before send
 - Salted password hash is stored in `cashflow_admin_credentials`.
 - Admin sessions are server-side records in `cashflow_admin_sessions`; the browser holds only the opaque session token in `sessionStorage`.
 - Admin login attempts are rate-limited.
-- Browser traffic uses same-origin `/api/backend`; Vercel proxies to Supabase.
+- Canonical production pages call the Supabase `cashflow` Edge Function directly over CORS.
+- The optional Vercel build can still use same-origin `/api/backend` as a proxy.
 - Privileged database writes are only performed by the server-side Edge Function using service-role access.
 - Security headers are configured in `vercel.json`.
 
 ## Deployment
-The proxy defaults to:
+Canonical production deployment uses Supabase Edge Functions:
+
+- `cashflow-web` — web UI
+- `cashflow` — API
+- `cashflow-mailer` — transactional email worker
+
+The optional Vercel proxy defaults to:
 
 `https://cjqcyjuxsqtuybjqumlk.supabase.co/functions/v1/cashflow`
 
