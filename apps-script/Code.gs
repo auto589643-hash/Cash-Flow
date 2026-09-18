@@ -557,8 +557,13 @@ function processEmailQueue(){
         return;
       }
 
-      if(q.type==='approval'&&(reg.status!=='Approved'||reg.approval_email_sent_at)){
+      if(q.type==='approval'&&reg.status!=='Approved'){
         updateObjectRow_(SHEETS.MAIL,q.__row,{status:'Cancelled',last_error:'registration no longer eligible for approval email'});
+        return;
+      }
+
+      if(q.type==='status_update'&&reg.status==='Approved'){
+        updateObjectRow_(SHEETS.MAIL,q.__row,{status:'Cancelled',last_error:'registration returned to Approved before status update'});
         return;
       }
 
@@ -579,16 +584,17 @@ function processEmailQueue(){
       try{
         if(q.type==='submission')sendSubmissionEmail_(reg,round);
         else if(q.type==='approval')sendApprovalEmail_(reg,round);
+        else if(q.type==='status_update')sendStatusUpdateEmail_(reg,round);
         else throw new Error('unknown email type');
 
         const sentAt=now_();
         updateObjectRow_(SHEETS.MAIL,q.__row,{status:'Sent',sent_at:sentAt,last_error:''});
         const ref=findRowBy_(SHEETS.REG,'registration_id',reg.registration_id);
         if(ref){
-          updateObjectRow_(SHEETS.REG,ref.row,{
-            [q.type==='submission'?'submission_email_sent_at':'approval_email_sent_at']:sentAt,
-            updated_at:sentAt
-          });
+          const patch={updated_at:sentAt};
+          if(q.type==='submission')patch.submission_email_sent_at=sentAt;
+          if(q.type==='approval')patch.approval_email_sent_at=sentAt;
+          updateObjectRow_(SHEETS.REG,ref.row,patch);
         }
         audit_('system',q.type+'_email_sent',reg.round_code,reg.registration_id,'');
       }catch(err){
