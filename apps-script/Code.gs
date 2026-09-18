@@ -83,7 +83,9 @@ function userMessage_(m){
     invalid_status:'สถานะไม่ถูกต้อง',
     contact_conflict:'เบอร์มือถือหรือ Email นี้มีใบสมัครที่ยังใช้งานอยู่ในรอบนี้แล้ว กรุณาเช็กสถานะใบสมัครเดิม',
     checked_in_locked:'ผู้สมัคร Check-in แล้ว จึงไม่สามารถเปลี่ยนสถานะปกติได้',
-    invalid_manage_token:'ลิงก์จัดการใบสมัครไม่ถูกต้อง'
+    invalid_manage_token:'ลิงก์จัดการใบสมัครไม่ถูกต้อง',
+    invalid_age_range:'ช่วงอายุไม่ถูกต้อง',
+    invalid_money_style:'ตัวเลือกสไตล์การเงินไม่ถูกต้อง'
   };
   return map[m]||m;
 }
@@ -122,6 +124,14 @@ function register_(body){
 
   const email=clean_(d.email,254).toLowerCase();
   if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('invalid_email');
+
+  const ageRange=clean_(d.age_range,40);
+  if(!['ต่ำกว่า 15','15–18','19–22','23 ปีขึ้นไป'].includes(ageRange))throw new Error('invalid_age_range');
+
+  const moneyStyle=clean_(d.money_style,80);
+  if(moneyStyle&&!['เก็บก่อน','ใช้ตามเป้าหมาย','มองหาโอกาส','แล้วแต่สถานการณ์'].includes(moneyStyle)){
+    throw new Error('invalid_money_style');
+  }
 
   const phone=normalizeThaiPhone_(d.phone);
   if(!/^0[689]\d{8}$/.test(phone))throw new Error('invalid_phone');
@@ -181,10 +191,10 @@ function register_(body){
       submitted_at:now,
       full_name:clean_(d.full_name,100),
       nickname:clean_(d.nickname,40),
-      age_range:clean_(d.age_range,40),
+      age_range:ageRange,
       phone,
       email,
-      money_style:clean_(d.money_style,80),
+      money_style:moneyStyle,
       money_goal:clean_(d.money_goal,500),
       status:full?'Waitlist':'Pending',
       reference_code:uniqueReferenceFromRows_(all),
