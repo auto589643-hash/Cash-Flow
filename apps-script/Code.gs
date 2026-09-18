@@ -683,6 +683,32 @@ function sendApprovalEmail_(reg,round){
   MailApp.sendEmail(options);
 }
 
+function sendStatusUpdateEmail_(reg,round){
+  const labels={
+    Pending:'กลับสู่สถานะรอตรวจสอบ',
+    Waitlist:'เปลี่ยนเป็นรายชื่อสำรอง',
+    Rejected:'ใบสมัครไม่ได้รับการอนุมัติ',
+    Cancelled:'ใบสมัครถูกยกเลิก'
+  };
+  const title=labels[reg.status]||('อัปเดตสถานะ: '+reg.status);
+  const html=mailShell_({
+    badge:String(reg.status||'UPDATE').toUpperCase(),
+    badgeBg:reg.status==='Waitlist'?BRAND.yellow2:'#f3e8f6',
+    badgeColor:BRAND.ink,
+    eyebrow:'CA$HFLOW MEETUP',
+    title:title,
+    intro:'สวัสดี '+escapeHtml_(reg.nickname||reg.full_name)+' สถานะใบสมัครของคุณมีการเปลี่ยนแปลงจากสิทธิ์ที่เคยได้รับ กรุณายึดสถานะล่าสุดใน Email นี้และหน้าเช็กสถานะเป็นข้อมูลปัจจุบัน',
+    body:referenceCardHtml_(reg.reference_code,'Reference Code')+eventCardHtml_(round)+manageButtonHtml_(reg,round),
+    footer:'Email นี้ส่งอัตโนมัติเมื่อสถานะใบสมัครเปลี่ยนหลังเคยได้รับการอนุมัติ'
+  });
+  MailApp.sendEmail({
+    to:reg.email,
+    subject:'อัปเดตสถานะใบสมัคร · '+(round.title||'CA$HFLOW Meetup'),
+    htmlBody:html,
+    name:getSetting_('email_sender_name')||'CA$HFLOW Meetup'
+  });
+}
+
 function mailShell_(x){
   return `<!doctype html><html><body style="margin:0;background:#f3eef5;font-family:Arial,'Noto Sans Thai',sans-serif;color:${BRAND.ink}"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3eef5"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:620px;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid ${BRAND.line}"><tr><td style="background:${BRAND.ink};padding:28px 28px 26px"><div style="color:${BRAND.yellow};font-size:13px;font-weight:800;letter-spacing:1.6px">${escapeHtml_(x.eyebrow)}</div><div style="margin-top:9px;color:#ffffff;font-size:34px;line-height:1.15;font-weight:900">CA<span style="color:${BRAND.yellow}">$</span>HFLOW</div><div style="margin-top:18px"><span style="display:inline-block;background:${x.badgeBg};color:${x.badgeColor};border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900">${escapeHtml_(x.badge)}</span></div><h1 style="margin:16px 0 0;color:#ffffff;font-size:28px;line-height:1.3">${escapeHtml_(x.title)}</h1></td></tr><tr><td style="padding:28px"><div style="font-size:15px;line-height:1.8;color:#3d3442">${x.intro}</div><div style="margin-top:22px">${x.body}</div></td></tr><tr><td style="background:${BRAND.paper};padding:18px 28px;border-top:1px solid ${BRAND.line};color:${BRAND.muted};font-size:12px;line-height:1.6">${escapeHtml_(x.footer)}<br>CA$HFLOW Meetup</td></tr></table></td></tr></table></body></html>`;
 }
