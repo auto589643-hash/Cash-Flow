@@ -30,6 +30,7 @@ Sheets:
 Participants can:
 - Check status using the same phone + email used to register.
 - Open a secure manage link from registration/approval email.
+- Request a fresh secure manage link by email after phone + email status verification (covers legacy records created before manage tokens existed).
 - Cancel an active registration from the secure manage link before check-in.
 - Reapply after `Rejected` or `Cancelled`.
 
@@ -49,7 +50,7 @@ Participants can:
 - Manual search by name/phone/reference remains available.
 
 ## Email integrity
-Email is queued asynchronously.
+Email is queued asynchronously. Submission, approval, status-correction and requested manage-link messages all use the same queue.
 
 Before an approval email is sent, the worker re-checks that the registration is still `Approved`. Pending approval emails are cancelled when status changes away from Approved. If an approval email was already sent and the registration is later demoted or cancelled, a status-correction email is queued so the participant is not left relying on stale approval information.
 
