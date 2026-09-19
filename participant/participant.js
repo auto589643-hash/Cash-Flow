@@ -566,6 +566,7 @@ function showSubmitted(data){
   }
 
   setStep(3);
+  $('#regAction').disabled=false;
 }
 
 async function next(){
