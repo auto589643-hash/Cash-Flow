@@ -77,7 +77,15 @@ async function resolveRound(code?: string) {
 
 function mapRound(r: any, activeCode?: string) {
   if (!r) return r;
-  return { ...r, round_id: r.id, is_public_active: activeCode ? r.round_code === activeCode : undefined };
+  const startTime = typeof r.start_time === "string" ? r.start_time.slice(0, 5) : r.start_time;
+  const endTime = typeof r.end_time === "string" ? r.end_time.slice(0, 5) : r.end_time;
+  return {
+    ...r,
+    start_time: startTime,
+    end_time: endTime,
+    round_id: r.id,
+    is_public_active: activeCode ? r.round_code === activeCode : undefined
+  };
 }
 
 function publicRegistration(r: any) {
