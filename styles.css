@@ -113,3 +113,73 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
 @media(prefers-reduced-motion:reduce){
   .primary{transition:none}
 }
+
+
+/* Cashflow participant hotfix — 2026-09-19 */
+.hero-art{
+  height:auto!important;
+  aspect-ratio:16/9;
+  margin:16px -18px 0;
+  clip-path:none!important;
+  border-top:2px solid var(--yellow);
+  border-bottom:2px solid var(--ink);
+  background:var(--ink);
+}
+.hero-art img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+  display:block;
+}
+.info-strip{padding-top:14px}
+.info-grid{gap:10px}
+.info-cell{
+  border:1.5px solid var(--ink);
+  border-radius:16px;
+  padding:12px 13px;
+  min-width:0;
+}
+.info-label{font-size:11px;margin-bottom:4px}
+.info-value{font-size:17px;line-height:1.32;overflow-wrap:anywhere}
+.info-cell.full .info-value{font-size:16px}
+.map-link{
+  display:block;
+  width:max-content;
+  max-width:100%;
+  margin-top:5px;
+  color:var(--purple);
+  font-size:12px;
+  line-height:1.3;
+  font-weight:900;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.back-link{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  min-height:44px!important;
+  display:inline-flex!important;
+  align-items:center;
+  border:1px solid rgba(255,255,255,.32)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+  padding:7px 12px!important;
+  margin:0 0 3px!important;
+  font-size:13px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  text-decoration:none!important;
+  box-shadow:none!important;
+}
+.back-link:active{background:rgba(255,255,255,.18)!important;transform:translateY(1px)}
+.pending-state{max-width:560px;margin:0 auto;padding-top:34px}
+.pending-state + .privacy-note{max-width:560px;margin-left:auto;margin-right:auto}
+#pendingState.active~.privacy-note{text-align:center}
+@media(max-width:420px){
+  .hero-art{aspect-ratio:16/9;height:auto!important;margin-top:14px}
+  .info-value{font-size:16px}
+  .info-cell.full .info-value{font-size:15px}
+  .back-link{min-height:42px!important;padding:7px 11px!important}
+}

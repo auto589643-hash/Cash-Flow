@@ -94,6 +94,11 @@ function setText(id,value){
   if(el)el.textContent=value||'—';
 }
 
+function formatEventTime(value){
+  const m=String(value||'').match(/^(\d{1,2}):(\d{2})/);
+  return m?`${m[1].padStart(2,'0')}:${m[2]} น.`:'—';
+}
+
 function viewName(name){
   return name==='#registerView'?'register':name==='#statusView'?'status':'event';
 }
@@ -119,24 +124,24 @@ function renderRound(round,{verified=false}={}){
   }
 
   setText('#eventDate',round.event_date_label||round.event_date);
-  setText('#eventTime',round.start_time?`เริ่ม ${round.start_time} น.`:'—');
+  setText('#eventTime',formatEventTime(round.start_time));
 
   const loc=$('#eventLocation');
   loc.textContent=round.location_name||'—';
   if(round.location_url){
-    loc.append(' · ');
     const a=document.createElement('a');
     a.href=round.location_url;
     a.target='_blank';
     a.rel='noopener';
-    a.textContent='ดูแผนที่ →';
+    a.className='map-link';
+    a.textContent='ดูแผนที่ ↗';
     loc.append(a);
   }
 
   $('#registerMeta').textContent=[
     round.location_name,
     round.event_date_label||round.event_date,
-    round.start_time&&`เริ่ม ${round.start_time} น.`
+    round.start_time&&formatEventTime(round.start_time)
   ].filter(Boolean).join(' · ');
 
   $('#statusMeta').textContent=`${round.title||'CA$HFLOW Meetup'} · ใช้ข้อมูลเดียวกับที่สมัคร`;
@@ -373,7 +378,7 @@ function setStep(step){
     renderReview();
   }else{
     $('#stepLabel').textContent='ส่งแล้ว';
-    $('#regAction').textContent='ดูสถานะใบสมัคร';
+    $('#regAction').textContent='กลับหน้ากิจกรรม';
     $('#regBack').classList.add('hidden');
     $('#regHelp').textContent='ระบบรับข้อมูลแล้ว';
   }
@@ -420,8 +425,15 @@ function showEvent({push=true}={}){
 }
 
 function backToEvent(){
-  if(history.state?.cashflowView&&history.state.cashflowView!=='event')history.back();
-  else showEvent();
+  setView('#eventView',{push:false});
+  history.replaceState({cashflowView:'event'},'',location.pathname+location.search);
+}
+
+function finishRegistrationToEvent(){
+  resetRegistrationFlow();
+  state.manageToken='';
+  state.lastRegistrationData=null;
+  backToEvent();
 }
 
 function showStatus(data=null){
@@ -574,7 +586,7 @@ async function next(){
   }
 
   if(state.step===3){
-    showStatus(state.lastRegistrationData);
+    finishRegistrationToEvent();
     return;
   }
 
